@@ -14,6 +14,10 @@ This file currently controls:
 - whether players auto-join the waiting world on connect
 - where players are sent when they leave TNTRun
 
+Queue pools are derived automatically from arena `min-players` and `max-players`.
+Players are assigned automatically after entering the waiting world.
+The current queueing logic prefers the most populated joinable queue and creates a new queue when needed.
+
 ## Arena Packs
 
 Arenas are not defined in `config.yml`.

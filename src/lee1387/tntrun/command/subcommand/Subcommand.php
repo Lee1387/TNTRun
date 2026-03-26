@@ -9,5 +9,8 @@ use pocketmine\player\Player;
 interface Subcommand {
     public function getName(): string;
 
-    public function execute(Player $player): void;
+    /**
+     * @param list<string> $args
+     */
+    public function execute(Player $player, array $args): void;
 }

@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace lee1387\tntrun\game;
 
 use lee1387\tntrun\arena\ArenaConfig;
+use lee1387\tntrun\game\queue\QueueAssigner;
+use lee1387\tntrun\game\queue\QueuePool;
+use lee1387\tntrun\game\queue\QueuePoolFactory;
 use lee1387\tntrun\player\PlayerSession;
 use lee1387\tntrun\player\PlayerSessionManager;
 
 final class GameManager {
     /**
-     * @var array<string, ArenaConfig>
+     * @var array<string, QueuePool>
      */
-    private array $arenaConfigs;
+    private array $queuePools;
 
     /**
      * @var array<string, GameInstance>
@@ -20,6 +23,8 @@ final class GameManager {
     private array $gameInstances = [];
 
     private int $nextGameInstanceId = 1;
+
+    private QueueAssigner $queueAssigner;
 
     /**
      * @param array<string, ArenaConfig> $arenaConfigs
@@ -29,40 +34,19 @@ final class GameManager {
         private PlayerSessionManager $playerSessionManager
     ) {
         \ksort($arenaConfigs);
-        $this->arenaConfigs = $arenaConfigs;
+        $this->queuePools = (new QueuePoolFactory())->build($arenaConfigs);
+        $this->queueAssigner = new QueueAssigner();
     }
 
-    /**
-     * @return array<string, ArenaConfig>
-     */
-    public function getArenaConfigs(): array {
-        return $this->arenaConfigs;
-    }
-
-    public function getArenaConfig(string $arenaName): ?ArenaConfig {
-        return $this->arenaConfigs[$arenaName] ?? null;
-    }
-
-    /**
-     * @return array<string, GameInstance>
-     */
-    public function getGameInstances(): array {
-        return $this->gameInstances;
-    }
-
-    public function getGameInstance(string $gameInstanceId): ?GameInstance {
-        return $this->gameInstances[$gameInstanceId] ?? null;
-    }
-
-    public function createGameInstance(?ArenaConfig $arenaConfig = null): GameInstance {
+    public function createGameInstance(QueuePool $queuePool): GameInstance {
         $gameInstanceId = "game_" . $this->nextGameInstanceId++;
-        $gameInstance = new GameInstance($gameInstanceId, $arenaConfig);
+        $gameInstance = new GameInstance($gameInstanceId, $queuePool);
         $this->gameInstances[$gameInstanceId] = $gameInstance;
 
         return $gameInstance;
     }
 
-    public function assignPlayerSession(PlayerSession $playerSession): GameInstance {
+    public function assignPlayerSession(PlayerSession $playerSession): ?GameInstance {
         $currentGameInstance = $this->findGameInstanceByPlayerSession($playerSession);
         if ($currentGameInstance !== null) {
             return $currentGameInstance;
@@ -70,7 +54,19 @@ final class GameManager {
 
         $playerSession->clearGameInstance();
 
-        $gameInstance = $this->findJoinableGameInstance($playerSession) ?? $this->createGameInstance($this->getDefaultArenaConfig());
+        $gameInstance = $this->queueAssigner->findMostPopulatedJoinableGameInstance($playerSession, $this->gameInstances);
+        if ($gameInstance !== null) {
+            $gameInstance->addPlayer($playerSession);
+
+            return $gameInstance;
+        }
+
+        $queuePool = $this->queueAssigner->determineQueuePoolForNewGameInstance($this->queuePools, $this->gameInstances);
+        if ($queuePool === null) {
+            return null;
+        }
+
+        $gameInstance = $this->createGameInstance($queuePool);
         $gameInstance->addPlayer($playerSession);
 
         return $gameInstance;
@@ -93,7 +89,7 @@ final class GameManager {
             return null;
         }
 
-        return $this->getGameInstance($gameInstanceId);
+        return $this->gameInstances[$gameInstanceId] ?? null;
     }
 
     public function removePlayerSession(PlayerSession $playerSession): void {
@@ -107,24 +103,5 @@ final class GameManager {
         if ($gameInstance->isEmpty()) {
             $this->removeGameInstance($gameInstance);
         }
-    }
-
-    private function getDefaultArenaConfig(): ?ArenaConfig {
-        $arenaName = \array_key_first($this->arenaConfigs);
-        if ($arenaName === null) {
-            return null;
-        }
-
-        return $this->arenaConfigs[$arenaName];
-    }
-
-    private function findJoinableGameInstance(PlayerSession $playerSession): ?GameInstance {
-        foreach ($this->gameInstances as $gameInstance) {
-            if ($gameInstance->canAcceptPlayer($playerSession)) {
-                return $gameInstance;
-            }
-        }
-
-        return null;
     }
 }

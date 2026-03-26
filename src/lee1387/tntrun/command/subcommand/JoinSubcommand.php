@@ -18,7 +18,12 @@ final class JoinSubcommand implements Subcommand {
         return "join";
     }
 
-    public function execute(Player $player): void {
+    public function execute(Player $player, array $args): void {
+        if ($args !== []) {
+            $player->sendMessage(TextFormat::RED . "Usage: /tntrun join");
+            return;
+        }
+
         $result = $this->plugin->getWaitingWorldEntryService()->enter($player);
 
         if ($result === WaitingWorldEntryResult::SUCCESS) {

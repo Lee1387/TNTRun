@@ -17,7 +17,12 @@ final class LeaveSubcommand implements Subcommand {
         return "leave";
     }
 
-    public function execute(Player $player): void {
+    public function execute(Player $player, array $args): void {
+        if ($args !== []) {
+            $player->sendMessage(TextFormat::RED . "Usage: /tntrun leave");
+            return;
+        }
+
         $playerSession = $this->plugin->getPlayerSessionManager()->get($player);
         $waitingWorld = $this->plugin->getWaitingWorld();
         if ($playerSession === null || !$waitingWorld->isPlayerJoined($playerSession)) {

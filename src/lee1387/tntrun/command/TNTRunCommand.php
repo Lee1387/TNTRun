@@ -49,7 +49,7 @@ final class TNTRunCommand extends Command implements PluginOwned {
             return;
         }
 
-        if (\count($args) !== 1) {
+        if ($args === []) {
             $sender->sendMessage($usageMessage);
             return;
         }
@@ -60,7 +60,9 @@ final class TNTRunCommand extends Command implements PluginOwned {
             return;
         }
 
-        $this->subcommands[$subcommand]->execute($sender);
+        /** @var list<string> $subcommandArgs */
+        $subcommandArgs = \array_slice($args, 1);
+        $this->subcommands[$subcommand]->execute($sender, $subcommandArgs);
     }
 
     public function getOwningPlugin(): Plugin {

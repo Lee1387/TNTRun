@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun\game;
 
-use lee1387\tntrun\arena\ArenaConfig;
+use lee1387\tntrun\game\queue\QueuePhase;
+use lee1387\tntrun\game\queue\QueuePool;
 use lee1387\tntrun\player\PlayerSession;
 
 final class GameInstance {
@@ -12,32 +13,52 @@ final class GameInstance {
      * @var array<string, true>
      */
     private array $playerIds = [];
-
-    private GameState $state = GameState::WAITING;
+    private QueuePhase $queuePhase = QueuePhase::WAITING;
 
     public function __construct(
         private string $id,
-        private ?ArenaConfig $arenaConfig = null
+        private QueuePool $queuePool
     ) {}
 
     public function getId(): string {
         return $this->id;
     }
 
-    public function getArenaConfig(): ?ArenaConfig {
-        return $this->arenaConfig;
+    public function getQueuePool(): QueuePool {
+        return $this->queuePool;
     }
 
-    public function assignArena(ArenaConfig $arenaConfig): void {
-        $this->arenaConfig = $arenaConfig;
+    public function isWaiting(): bool {
+        return $this->queuePhase === QueuePhase::WAITING;
     }
 
-    public function getState(): GameState {
-        return $this->state;
+    public function isReady(): bool {
+        return $this->queuePhase === QueuePhase::READY;
     }
 
-    public function setState(GameState $state): void {
-        $this->state = $state;
+    public function isLocked(): bool {
+        return $this->queuePhase === QueuePhase::LOCKED;
+    }
+
+    public function lockQueue(): bool {
+        if ($this->isLocked() || !$this->isStartable()) {
+            return false;
+        }
+
+        $this->queuePhase = QueuePhase::LOCKED;
+
+        return true;
+    }
+
+    public function unlockQueue(): bool {
+        if (!$this->isLocked()) {
+            return false;
+        }
+
+        $this->queuePhase = QueuePhase::WAITING;
+        $this->refreshQueuePhase();
+
+        return true;
     }
 
     public function hasPlayer(PlayerSession $playerSession): bool {
@@ -54,22 +75,23 @@ final class GameInstance {
             return false;
         }
 
+        if (!$this->isJoinable()) {
+            return false;
+        }
+
         $this->playerIds[$playerId] = true;
         $playerSession->assignGameInstance($this->id);
+        $this->refreshQueuePhase();
 
         return true;
     }
 
     public function canAcceptPlayer(PlayerSession $playerSession): bool {
-        if ($this->state !== GameState::WAITING) {
-            return false;
-        }
-
         if ($this->hasPlayer($playerSession)) {
             return true;
         }
 
-        return !$this->isFull();
+        return $this->isJoinable();
     }
 
     public function removePlayer(PlayerSession $playerSession): bool {
@@ -82,6 +104,7 @@ final class GameInstance {
         if ($playerSession->getGameInstanceId() === $this->id) {
             $playerSession->clearGameInstance();
         }
+        $this->refreshQueuePhase();
 
         return true;
     }
@@ -91,11 +114,15 @@ final class GameInstance {
     }
 
     public function isFull(): bool {
-        if ($this->arenaConfig === null) {
-            return false;
-        }
+        return $this->getPlayerCount() >= $this->queuePool->getMaxPlayers();
+    }
 
-        return $this->getPlayerCount() >= $this->arenaConfig->getMaxPlayers();
+    public function isStartable(): bool {
+        return $this->getPlayerCount() >= $this->queuePool->getMinPlayers();
+    }
+
+    public function isJoinable(): bool {
+        return !$this->isLocked() && !$this->isFull();
     }
 
     public function isEmpty(): bool {
@@ -107,5 +134,13 @@ final class GameInstance {
      */
     public function getPlayerIds(): array {
         return \array_keys($this->playerIds);
+    }
+
+    private function refreshQueuePhase(): void {
+        if ($this->isLocked()) {
+            return;
+        }
+
+        $this->queuePhase = $this->isStartable() ? QueuePhase::READY : QueuePhase::WAITING;
     }
 }
