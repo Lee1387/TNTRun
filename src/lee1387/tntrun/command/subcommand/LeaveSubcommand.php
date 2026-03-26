@@ -24,8 +24,7 @@ final class LeaveSubcommand implements Subcommand {
         }
 
         $playerSession = $this->plugin->getPlayerSessionManager()->get($player);
-        $waitingWorld = $this->plugin->getWaitingWorld();
-        if ($playerSession === null || !$waitingWorld->isPlayerJoined($playerSession)) {
+        if ($playerSession === null || !$playerSession->isInWaitingWorld()) {
             $player->sendMessage(TextFormat::YELLOW . "You are not in the TNTRun waiting world.");
             return;
         }
@@ -35,7 +34,7 @@ final class LeaveSubcommand implements Subcommand {
             return;
         }
 
-        $this->plugin->getGameManager()->removePlayerSession($playerSession);
-        $waitingWorld->leavePlayer($playerSession);
+        $this->plugin->getQueueManager()->removePlayerSession($playerSession);
+        $playerSession->leaveWaitingWorld();
     }
 }

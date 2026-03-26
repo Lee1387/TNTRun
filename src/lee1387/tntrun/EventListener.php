@@ -42,8 +42,8 @@ final class EventListener implements Listener {
             return;
         }
 
-        $this->plugin->getGameManager()->removePlayerSession($playerSession);
-        $this->plugin->getWaitingWorld()->leavePlayer($playerSession);
+        $this->plugin->getQueueManager()->removePlayerSession($playerSession);
+        $playerSession->leaveWaitingWorld();
         $this->plugin->getPlayerSessionManager()->remove($event->getPlayer());
     }
 
@@ -62,7 +62,7 @@ final class EventListener implements Listener {
         }
 
         $playerSession = $this->plugin->getPlayerSessionManager()->get($player);
-        if ($playerSession === null || !$waitingWorld->isPlayerJoined($playerSession)) {
+        if ($playerSession === null || !$playerSession->isInWaitingWorld()) {
             return;
         }
 
@@ -74,8 +74,13 @@ final class EventListener implements Listener {
             return;
         }
 
-        $this->plugin->getGameManager()->removePlayerSession($playerSession);
-        $waitingWorld->leavePlayer($playerSession);
+        if ($playerSession->consumeManagedWaitingWorldExit()) {
+            $playerSession->leaveWaitingWorld();
+            return;
+        }
+
+        $this->plugin->getQueueManager()->removePlayerSession($playerSession);
+        $playerSession->leaveWaitingWorld();
     }
 
     /**
@@ -91,8 +96,8 @@ final class EventListener implements Listener {
             return;
         }
 
-        $this->plugin->getGameManager()->removePlayerSession($playerSession);
-        $this->plugin->getWaitingWorld()->leavePlayer($playerSession);
+        $this->plugin->getQueueManager()->removePlayerSession($playerSession);
+        $playerSession->leaveWaitingWorld();
         $this->plugin->getPlayerSessionManager()->remove($event->getPlayer());
     }
 }

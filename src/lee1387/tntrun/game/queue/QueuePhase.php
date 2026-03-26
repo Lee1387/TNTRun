@@ -8,4 +8,5 @@ enum QueuePhase {
     case WAITING;
     case READY;
     case LOCKED;
+    case COUNTDOWN_COMPLETE;
 }

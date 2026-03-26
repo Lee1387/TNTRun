@@ -11,6 +11,7 @@ use lee1387\tntrun\arena\io\BundledArenaPackSeeder;
 use lee1387\tntrun\command\TNTRunCommand;
 use lee1387\tntrun\config\TNTRunConfigLoader;
 use lee1387\tntrun\game\GameManager;
+use lee1387\tntrun\game\queue\QueueManager;
 use lee1387\tntrun\game\queue\task\QueueTickTask;
 use lee1387\tntrun\player\PlayerSessionManager;
 use lee1387\tntrun\support\LeaveDestination;
@@ -24,6 +25,7 @@ final class TNTRun extends PluginBase {
     private WaitingWorld $waitingWorld;
     private LeaveDestination $leaveDestination;
     private GameManager $gameManager;
+    private QueueManager $queueManager;
     private PlayerSessionManager $playerSessionManager;
     private WorldLoader $worldLoader;
     private WaitingWorldEntryService $waitingWorldEntryService;
@@ -55,11 +57,12 @@ final class TNTRun extends PluginBase {
         $this->waitingWorld = $config["waitingWorld"];
         $this->leaveDestination = $config["leaveDestination"];
         $this->playerSessionManager = new PlayerSessionManager();
-        $this->gameManager = new GameManager($arenaConfigs, $this->playerSessionManager);
+        $this->gameManager = new GameManager($this->playerSessionManager);
+        $this->queueManager = new QueueManager($arenaConfigs, $this->gameManager);
         $this->worldLoader = new WorldLoader($this->getServer()->getWorldManager());
         $this->waitingWorldEntryService = new WaitingWorldEntryService(
             $this->waitingWorld,
-            $this->gameManager,
+            $this->queueManager,
             $this->playerSessionManager,
             $this->worldLoader
         );
@@ -69,7 +72,7 @@ final class TNTRun extends PluginBase {
             new TNTRunCommand($this)
         );
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
-        $this->getScheduler()->scheduleRepeatingTask(new QueueTickTask($this->gameManager), 20);
+        $this->getScheduler()->scheduleRepeatingTask(new QueueTickTask($this->queueManager), 20);
     }
 
     public function getWaitingWorld(): WaitingWorld {
@@ -88,8 +91,8 @@ final class TNTRun extends PluginBase {
         return $this->leaveDestination;
     }
 
-    public function getGameManager(): GameManager {
-        return $this->gameManager;
+    public function getQueueManager(): QueueManager {
+        return $this->queueManager;
     }
 
     public function getPlayerSessionManager(): PlayerSessionManager {

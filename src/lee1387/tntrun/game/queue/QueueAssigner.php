@@ -40,7 +40,7 @@ final class QueueAssigner {
         $selectedPlayerCount = -1;
 
         foreach ($gameInstances as $gameInstance) {
-            if (!$gameInstance->isReady()) {
+            if (!$gameInstance->isReadyToStart()) {
                 continue;
             }
 
@@ -61,7 +61,7 @@ final class QueueAssigner {
      */
     public function findLockedGameInstance(array $gameInstances): ?GameInstance {
         foreach ($gameInstances as $gameInstance) {
-            if ($gameInstance->isLocked()) {
+            if ($gameInstance->hasStartPathInProgress()) {
                 return $gameInstance;
             }
         }
@@ -74,28 +74,38 @@ final class QueueAssigner {
      * @param array<string, GameInstance> $gameInstances
      */
     public function determineQueuePoolForNewGameInstance(array $queuePools, array $gameInstances): ?QueuePool {
-        $mostPopulatedGameInstance = null;
-        $selectedPlayerCount = -1;
+        $selectedQueuePool = null;
+        $selectedTotalPlayerCount = null;
+        $selectedGameInstanceCount = null;
 
-        foreach ($gameInstances as $gameInstance) {
-            $playerCount = $gameInstance->getPlayerCount();
-            if ($playerCount <= $selectedPlayerCount) {
+        foreach ($queuePools as $queuePool) {
+            $totalPlayerCount = 0;
+            $gameInstanceCount = 0;
+
+            foreach ($gameInstances as $gameInstance) {
+                if ($gameInstance->getQueuePool()->getId() !== $queuePool->getId()) {
+                    continue;
+                }
+
+                $totalPlayerCount += $gameInstance->getPlayerCount();
+                ++$gameInstanceCount;
+            }
+
+            if (
+                $selectedQueuePool !== null
+                && (
+                    $totalPlayerCount > $selectedTotalPlayerCount
+                    || ($totalPlayerCount === $selectedTotalPlayerCount && $gameInstanceCount >= $selectedGameInstanceCount)
+                )
+            ) {
                 continue;
             }
 
-            $mostPopulatedGameInstance = $gameInstance;
-            $selectedPlayerCount = $playerCount;
+            $selectedQueuePool = $queuePool;
+            $selectedTotalPlayerCount = $totalPlayerCount;
+            $selectedGameInstanceCount = $gameInstanceCount;
         }
 
-        if ($mostPopulatedGameInstance !== null) {
-            return $mostPopulatedGameInstance->getQueuePool();
-        }
-
-        $queuePoolId = \array_key_first($queuePools);
-        if ($queuePoolId === null) {
-            return null;
-        }
-
-        return $queuePools[$queuePoolId];
+        return $selectedQueuePool;
     }
 }

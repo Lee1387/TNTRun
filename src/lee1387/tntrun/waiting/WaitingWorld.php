@@ -6,7 +6,6 @@ namespace lee1387\tntrun\waiting;
 
 use InvalidArgumentException;
 use lee1387\tntrun\arena\ArenaSpawn;
-use lee1387\tntrun\player\PlayerSession;
 
 final class WaitingWorld {
     public function __construct(
@@ -29,17 +28,5 @@ final class WaitingWorld {
 
     public function getSpawn(): ArenaSpawn {
         return $this->spawn;
-    }
-
-    public function isPlayerJoined(PlayerSession $playerSession): bool {
-        return $playerSession->isInWaitingWorld();
-    }
-
-    public function joinPlayer(PlayerSession $playerSession): bool {
-        return $playerSession->joinWaitingWorld();
-    }
-
-    public function leavePlayer(PlayerSession $playerSession): bool {
-        return $playerSession->leaveWaitingWorld();
     }
 }
