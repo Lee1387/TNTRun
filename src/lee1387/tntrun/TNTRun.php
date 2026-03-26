@@ -11,6 +11,7 @@ use lee1387\tntrun\arena\io\BundledArenaPackSeeder;
 use lee1387\tntrun\command\TNTRunCommand;
 use lee1387\tntrun\config\TNTRunConfigLoader;
 use lee1387\tntrun\game\GameManager;
+use lee1387\tntrun\player\PlayerSessionManager;
 use lee1387\tntrun\support\LeaveDestination;
 use lee1387\tntrun\support\WorldLoader;
 use lee1387\tntrun\waiting\WaitingWorld;
@@ -22,6 +23,7 @@ final class TNTRun extends PluginBase {
     private WaitingWorld $waitingWorld;
     private LeaveDestination $leaveDestination;
     private GameManager $gameManager;
+    private PlayerSessionManager $playerSessionManager;
     private WorldLoader $worldLoader;
     private WaitingWorldEntryService $waitingWorldEntryService;
 
@@ -51,9 +53,10 @@ final class TNTRun extends PluginBase {
 
         $this->waitingWorld = $config["waitingWorld"];
         $this->leaveDestination = $config["leaveDestination"];
-        $this->gameManager = new GameManager($arenaConfigs);
+        $this->playerSessionManager = new PlayerSessionManager();
+        $this->gameManager = new GameManager($arenaConfigs, $this->playerSessionManager);
         $this->worldLoader = new WorldLoader($this->getServer()->getWorldManager());
-        $this->waitingWorldEntryService = new WaitingWorldEntryService($this->waitingWorld, $this->worldLoader);
+        $this->waitingWorldEntryService = new WaitingWorldEntryService($this->waitingWorld, $this->playerSessionManager, $this->worldLoader);
 
         $this->getServer()->getCommandMap()->register(
             $this->getDescription()->getName(),
@@ -80,5 +83,9 @@ final class TNTRun extends PluginBase {
 
     public function getGameManager(): GameManager {
         return $this->gameManager;
+    }
+
+    public function getPlayerSessionManager(): PlayerSessionManager {
+        return $this->playerSessionManager;
     }
 }

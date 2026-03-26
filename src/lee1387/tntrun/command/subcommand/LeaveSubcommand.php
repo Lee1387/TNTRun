@@ -18,8 +18,9 @@ final class LeaveSubcommand implements Subcommand {
     }
 
     public function execute(Player $player): void {
+        $playerSession = $this->plugin->getPlayerSessionManager()->get($player);
         $waitingWorld = $this->plugin->getWaitingWorld();
-        if (!$waitingWorld->isPlayerJoined($player)) {
+        if ($playerSession === null || !$waitingWorld->isPlayerJoined($playerSession)) {
             $player->sendMessage(TextFormat::YELLOW . "You are not in the TNTRun waiting world.");
             return;
         }
@@ -29,6 +30,11 @@ final class LeaveSubcommand implements Subcommand {
             return;
         }
 
-        $waitingWorld->leavePlayer($player);
+        $gameInstance = $this->plugin->getGameManager()->findGameInstanceByPlayerSession($playerSession);
+        if ($gameInstance !== null) {
+            $gameInstance->removePlayer($playerSession);
+        }
+
+        $waitingWorld->leavePlayer($playerSession);
     }
 }

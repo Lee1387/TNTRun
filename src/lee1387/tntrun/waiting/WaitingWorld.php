@@ -6,14 +6,9 @@ namespace lee1387\tntrun\waiting;
 
 use InvalidArgumentException;
 use lee1387\tntrun\arena\ArenaSpawn;
-use pocketmine\player\Player;
+use lee1387\tntrun\player\PlayerSession;
 
 final class WaitingWorld {
-    /**
-     * @var array<string, true>
-     */
-    private array $joinedPlayerIds = [];
-
     public function __construct(
         private bool $autoJoin,
         private string $worldName,
@@ -36,29 +31,15 @@ final class WaitingWorld {
         return $this->spawn;
     }
 
-    public function isPlayerJoined(Player $player): bool {
-        return isset($this->joinedPlayerIds[$player->getUniqueId()->toString()]);
+    public function isPlayerJoined(PlayerSession $playerSession): bool {
+        return $playerSession->isInWaitingWorld();
     }
 
-    public function joinPlayer(Player $player): bool {
-        $playerId = $player->getUniqueId()->toString();
-        if (isset($this->joinedPlayerIds[$playerId])) {
-            return false;
-        }
-
-        $this->joinedPlayerIds[$playerId] = true;
-
-        return true;
+    public function joinPlayer(PlayerSession $playerSession): bool {
+        return $playerSession->joinWaitingWorld();
     }
 
-    public function leavePlayer(Player $player): bool {
-        $playerId = $player->getUniqueId()->toString();
-        if (!isset($this->joinedPlayerIds[$playerId])) {
-            return false;
-        }
-
-        unset($this->joinedPlayerIds[$playerId]);
-
-        return true;
+    public function leavePlayer(PlayerSession $playerSession): bool {
+        return $playerSession->leaveWaitingWorld();
     }
 }

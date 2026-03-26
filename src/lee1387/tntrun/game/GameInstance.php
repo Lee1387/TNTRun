@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace lee1387\tntrun\game;
 
 use lee1387\tntrun\arena\ArenaConfig;
-use pocketmine\player\Player;
+use lee1387\tntrun\player\PlayerSession;
 
 final class GameInstance {
     /**
@@ -40,28 +40,36 @@ final class GameInstance {
         $this->state = $state;
     }
 
-    public function hasPlayer(Player $player): bool {
-        return isset($this->playerIds[$player->getUniqueId()->toString()]);
+    public function hasPlayer(PlayerSession $playerSession): bool {
+        return isset($this->playerIds[$playerSession->getPlayerId()]);
     }
 
-    public function addPlayer(Player $player): bool {
-        $playerId = $player->getUniqueId()->toString();
+    public function addPlayer(PlayerSession $playerSession): bool {
+        $playerId = $playerSession->getPlayerId();
+        if ($playerSession->getGameInstanceId() !== null && $playerSession->getGameInstanceId() !== $this->id) {
+            return false;
+        }
+
         if (isset($this->playerIds[$playerId])) {
             return false;
         }
 
         $this->playerIds[$playerId] = true;
+        $playerSession->assignGameInstance($this->id);
 
         return true;
     }
 
-    public function removePlayer(Player $player): bool {
-        $playerId = $player->getUniqueId()->toString();
+    public function removePlayer(PlayerSession $playerSession): bool {
+        $playerId = $playerSession->getPlayerId();
         if (!isset($this->playerIds[$playerId])) {
             return false;
         }
 
         unset($this->playerIds[$playerId]);
+        if ($playerSession->getGameInstanceId() === $this->id) {
+            $playerSession->clearGameInstance();
+        }
 
         return true;
     }

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace lee1387\tntrun\game;
 
 use lee1387\tntrun\arena\ArenaConfig;
-use pocketmine\player\Player;
+use lee1387\tntrun\player\PlayerSession;
+use lee1387\tntrun\player\PlayerSessionManager;
 
 final class GameManager {
     /**
@@ -23,7 +24,10 @@ final class GameManager {
     /**
      * @param array<string, ArenaConfig> $arenaConfigs
      */
-    public function __construct(array $arenaConfigs) {
+    public function __construct(
+        array $arenaConfigs,
+        private PlayerSessionManager $playerSessionManager
+    ) {
         \ksort($arenaConfigs);
         $this->arenaConfigs = $arenaConfigs;
     }
@@ -59,16 +63,22 @@ final class GameManager {
     }
 
     public function removeGameInstance(GameInstance $gameInstance): void {
-        unset($this->gameInstances[$gameInstance->getId()]);
-    }
-
-    public function findGameInstanceByPlayer(Player $player): ?GameInstance {
-        foreach ($this->gameInstances as $gameInstance) {
-            if ($gameInstance->hasPlayer($player)) {
-                return $gameInstance;
+        foreach ($gameInstance->getPlayerIds() as $playerId) {
+            $playerSession = $this->playerSessionManager->getById($playerId);
+            if ($playerSession !== null) {
+                $playerSession->clearGameInstance();
             }
         }
 
-        return null;
+        unset($this->gameInstances[$gameInstance->getId()]);
+    }
+
+    public function findGameInstanceByPlayerSession(PlayerSession $playerSession): ?GameInstance {
+        $gameInstanceId = $playerSession->getGameInstanceId();
+        if ($gameInstanceId === null) {
+            return null;
+        }
+
+        return $this->getGameInstance($gameInstanceId);
     }
 }

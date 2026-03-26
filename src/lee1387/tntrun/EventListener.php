@@ -37,7 +37,18 @@ final class EventListener implements Listener {
     }
 
     public function onPlayerQuit(PlayerQuitEvent $event): void {
-        $this->plugin->getWaitingWorld()->leavePlayer($event->getPlayer());
+        $playerSession = $this->plugin->getPlayerSessionManager()->get($event->getPlayer());
+        if ($playerSession === null) {
+            return;
+        }
+
+        $gameInstance = $this->plugin->getGameManager()->findGameInstanceByPlayerSession($playerSession);
+        if ($gameInstance !== null) {
+            $gameInstance->removePlayer($playerSession);
+        }
+
+        $this->plugin->getWaitingWorld()->leavePlayer($playerSession);
+        $this->plugin->getPlayerSessionManager()->remove($event->getPlayer());
     }
 
     /**
@@ -54,7 +65,8 @@ final class EventListener implements Listener {
             return;
         }
 
-        if (!$waitingWorld->isPlayerJoined($player)) {
+        $playerSession = $this->plugin->getPlayerSessionManager()->get($player);
+        if ($playerSession === null || !$waitingWorld->isPlayerJoined($playerSession)) {
             return;
         }
 
@@ -66,7 +78,7 @@ final class EventListener implements Listener {
             return;
         }
 
-        $waitingWorld->leavePlayer($player);
+        $waitingWorld->leavePlayer($playerSession);
     }
 
     /**
@@ -77,6 +89,17 @@ final class EventListener implements Listener {
             return;
         }
 
-        $this->plugin->getWaitingWorld()->leavePlayer($event->getPlayer());
+        $playerSession = $this->plugin->getPlayerSessionManager()->get($event->getPlayer());
+        if ($playerSession === null) {
+            return;
+        }
+
+        $gameInstance = $this->plugin->getGameManager()->findGameInstanceByPlayerSession($playerSession);
+        if ($gameInstance !== null) {
+            $gameInstance->removePlayer($playerSession);
+        }
+
+        $this->plugin->getWaitingWorld()->leavePlayer($playerSession);
+        $this->plugin->getPlayerSessionManager()->remove($event->getPlayer());
     }
 }
