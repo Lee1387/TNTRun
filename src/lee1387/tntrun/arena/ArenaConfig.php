@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace lee1387\tntrun\arena;
 
 use InvalidArgumentException;
+use lee1387\tntrun\arena\io\ArenaWorldSource;
 
 final class ArenaConfig {
     public function __construct(
         private string $name,
-        private string $worldName,
+        private ArenaWorldSource $worldSource,
         private ArenaSpawn $spectatorSpawn,
         private int $eliminationY,
         private int $minPlayers,
@@ -19,10 +20,6 @@ final class ArenaConfig {
     ) {
         if ($this->name === '') {
             throw new InvalidArgumentException("Arena name cannot be empty.");
-        }
-
-        if ($this->worldName === '') {
-            throw new InvalidArgumentException("Arena world name cannot be empty.");
         }
 
         if ($this->minPlayers < 2) {
@@ -46,8 +43,12 @@ final class ArenaConfig {
         return $this->name;
     }
 
+    public function getWorldSource(): ArenaWorldSource {
+        return $this->worldSource;
+    }
+
     public function getWorldName(): string {
-        return $this->worldName;
+        return $this->worldSource->getWorldName();
     }
 
     public function getSpectatorSpawn(): ArenaSpawn {

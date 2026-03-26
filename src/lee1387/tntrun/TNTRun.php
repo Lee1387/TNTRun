@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun;
 
+use InvalidArgumentException;
 use lee1387\tntrun\arena\ArenaConfig;
+use lee1387\tntrun\arena\io\ArenaPackLoader;
+use lee1387\tntrun\arena\io\ArenaWorldInstaller;
+use lee1387\tntrun\arena\io\BundledArenaPackSeeder;
 use lee1387\tntrun\command\TNTRunCommand;
 use lee1387\tntrun\config\TNTRunConfigLoader;
 use lee1387\tntrun\support\LeaveDestination;
@@ -12,7 +16,6 @@ use lee1387\tntrun\support\WorldLoader;
 use lee1387\tntrun\waiting\WaitingWorld;
 use lee1387\tntrun\waiting\WaitingWorldEntryService;
 use pocketmine\plugin\PluginBase;
-use pocketmine\utils\Config;
 use RuntimeException;
 
 final class TNTRun extends PluginBase {
@@ -29,14 +32,22 @@ final class TNTRun extends PluginBase {
 
     protected function onEnable(): void {
         $this->saveDefaultConfig();
-        $this->saveResource("arenas.yml");
+
+        $bundledArenaPackSeeder = new BundledArenaPackSeeder(
+            $this->getDataFolder(),
+            $this->getResources(),
+            fn (string $resourcePath): bool => $this->saveResource($resourcePath)
+        );
+        $bundledArenaPackSeeder->seed();
 
         try {
-            $config = (new TNTRunConfigLoader(
-                $this->getConfig(),
-                new Config($this->getDataFolder() . "arenas.yml", Config::YAML)
-            ))->load();
-        } catch (\InvalidArgumentException $exception) {
+            $config = (new TNTRunConfigLoader($this->getConfig()))->load();
+            $this->arenaConfigs = (new ArenaPackLoader($this->getDataFolder() . "arenas"))->load();
+            (new ArenaWorldInstaller(
+                $this->getServer()->getDataPath() . "worlds",
+                $this->getDataFolder() . "tmp"
+            ))->installAll($this->arenaConfigs);
+        } catch (InvalidArgumentException | RuntimeException $exception) {
             throw new RuntimeException(
                 "Failed to load TNTRun configuration: " . $exception->getMessage(),
                 previous: $exception
@@ -44,7 +55,6 @@ final class TNTRun extends PluginBase {
         }
 
         $this->waitingWorld = new WaitingWorld($config["waitingWorld"]);
-        $this->arenaConfigs = $config["arenas"];
         $this->leaveDestination = $config["leaveDestination"];
         $this->worldLoader = new WorldLoader($this->getServer()->getWorldManager());
         $this->waitingWorldEntryService = new WaitingWorldEntryService($this->waitingWorld, $this->worldLoader);
