@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun;
 
-use lee1387\tntrun\arena\ArenaConfig;
+use lee1387\tntrun\arena\Arena;
 use lee1387\tntrun\arena\ArenaConfigLoader;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
@@ -13,7 +13,7 @@ use RuntimeException;
 final class TNTRun extends PluginBase {
     use SingletonTrait;
 
-    private ArenaConfig $arenaConfig;
+    private Arena $arena;
 
     protected function onLoad(): void {
         self::setInstance($this);
@@ -23,7 +23,7 @@ final class TNTRun extends PluginBase {
         $this->saveDefaultConfig();
 
         try {
-            $this->arenaConfig = (new ArenaConfigLoader($this->getConfig()))->load();
+            $arenaConfig = (new ArenaConfigLoader($this->getConfig()))->load();
         } catch (\InvalidArgumentException $exception) {
             throw new RuntimeException(
                 "Failed to load TNTRun arena configuration: " . $exception->getMessage(),
@@ -31,14 +31,16 @@ final class TNTRun extends PluginBase {
             );
         }
 
+        $this->arena = new Arena($arenaConfig);
+
         $this->getLogger()->info(\sprintf(
             'Loaded arena "%s" in world "%s".',
-            $this->arenaConfig->getName(),
-            $this->arenaConfig->getWorldName()
+            $this->arena->getName(),
+            $this->arena->getWorldName()
         ));
     }
 
-    public function getArenaConfig(): ArenaConfig {
-        return $this->arenaConfig;
+    public function getArena(): Arena {
+        return $this->arena;
     }
 }
