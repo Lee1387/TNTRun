@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace lee1387\tntrun;
 
 use InvalidArgumentException;
+use lee1387\tntrun\bootstrap\TNTRunBootstrap;
 use pocketmine\plugin\PluginBase;
 use RuntimeException;
 

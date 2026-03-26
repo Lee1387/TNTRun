@@ -20,6 +20,10 @@ final class PlayerSession {
         return $this->inWaitingWorld;
     }
 
+    public function isInTNTRun(): bool {
+        return $this->inWaitingWorld;
+    }
+
     public function joinWaitingWorld(): bool {
         if ($this->inWaitingWorld) {
             return false;

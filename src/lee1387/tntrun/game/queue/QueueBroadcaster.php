@@ -6,7 +6,7 @@ namespace lee1387\tntrun\game\queue;
 
 use lee1387\tntrun\config\message\QueueMessages;
 use lee1387\tntrun\game\GameInstance;
-use lee1387\tntrun\infrastructure\OnlinePlayerRegistry;
+use lee1387\tntrun\player\OnlinePlayerRegistry;
 use lee1387\tntrun\player\PlayerSession;
 
 final class QueueBroadcaster {

@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace lee1387\tntrun\waiting;
+namespace lee1387\tntrun\waiting\listener;
 
 use lee1387\tntrun\game\queue\QueueManager;
 use lee1387\tntrun\player\PlayerSessionManager;
+use lee1387\tntrun\waiting\WaitingWorld;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;

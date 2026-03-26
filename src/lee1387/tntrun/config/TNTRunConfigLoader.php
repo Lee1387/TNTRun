@@ -6,7 +6,7 @@ namespace lee1387\tntrun\config;
 
 use InvalidArgumentException;
 use lee1387\tntrun\game\queue\QueueSettings;
-use lee1387\tntrun\infrastructure\LeaveDestination;
+use lee1387\tntrun\waiting\LeaveDestination;
 use lee1387\tntrun\waiting\WaitingWorld;
 use pocketmine\utils\Config;
 

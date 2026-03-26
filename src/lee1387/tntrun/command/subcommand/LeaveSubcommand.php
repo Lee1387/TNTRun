@@ -6,9 +6,9 @@ namespace lee1387\tntrun\command\subcommand;
 
 use lee1387\tntrun\config\message\LeaveMessages;
 use lee1387\tntrun\game\queue\QueueManager;
-use lee1387\tntrun\infrastructure\LeaveDestination;
-use lee1387\tntrun\infrastructure\WorldLoader;
 use lee1387\tntrun\player\PlayerSessionManager;
+use lee1387\tntrun\waiting\LeaveDestination;
+use lee1387\tntrun\world\WorldLoader;
 use pocketmine\player\Player;
 
 final class LeaveSubcommand implements Subcommand {

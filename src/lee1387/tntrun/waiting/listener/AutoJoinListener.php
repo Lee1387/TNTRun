@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-namespace lee1387\tntrun\waiting;
+namespace lee1387\tntrun\waiting\listener;
 
 use lee1387\tntrun\config\message\AutoJoinMessages;
+use lee1387\tntrun\waiting\WaitingWorld;
+use lee1387\tntrun\waiting\WaitingWorldEntryResult;
+use lee1387\tntrun\waiting\WaitingWorldEntryService;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 

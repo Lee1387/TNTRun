@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace lee1387\tntrun\player;
+namespace lee1387\tntrun\player\listener;
 
 use lee1387\tntrun\game\queue\QueueManager;
-use lee1387\tntrun\infrastructure\OnlinePlayerRegistry;
+use lee1387\tntrun\player\OnlinePlayerRegistry;
+use lee1387\tntrun\player\PlayerSessionManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerKickEvent;

@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace lee1387\tntrun\infrastructure;
+namespace lee1387\tntrun\waiting;
 
 use InvalidArgumentException;
 use lee1387\tntrun\arena\ArenaSpawn;
+use lee1387\tntrun\world\WorldLoader;
 use LogicException;
 use pocketmine\player\Player;
 

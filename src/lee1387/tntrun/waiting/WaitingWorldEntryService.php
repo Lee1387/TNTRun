@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace lee1387\tntrun\waiting;
 
 use lee1387\tntrun\game\queue\QueueManager;
-use lee1387\tntrun\infrastructure\WorldLoader;
 use lee1387\tntrun\player\PlayerSessionManager;
+use lee1387\tntrun\player\TNTRunPlayerGuard;
+use lee1387\tntrun\world\WorldLoader;
 use pocketmine\player\Player;
 
 final class WaitingWorldEntryService {
@@ -14,7 +15,8 @@ final class WaitingWorldEntryService {
         private WaitingWorld $waitingWorld,
         private QueueManager $queueManager,
         private PlayerSessionManager $playerSessionManager,
-        private WorldLoader $worldLoader
+        private WorldLoader $worldLoader,
+        private TNTRunPlayerGuard $playerGuard
     ) {}
 
     public function enter(Player $player): WaitingWorldEntryResult {
@@ -37,6 +39,7 @@ final class WaitingWorldEntryService {
             return WaitingWorldEntryResult::ALREADY_JOINED;
         }
 
+        $this->playerGuard->applyAdventureMode($player);
         $this->queueManager->assignPlayerSession($playerSession);
 
         return WaitingWorldEntryResult::SUCCESS;
