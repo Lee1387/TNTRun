@@ -42,10 +42,11 @@ final class ArenaPackLoader {
             }
 
             $arenaConfigData = (new Config($arenaConfigPath, Config::YAML))->getAll();
+            $arenaConfigKey = "arenas.$arenaName";
             $arenaConfigs[$arenaName] = $this->loadArenaConfig(
                 $arenaName,
-                $this->valueReader->requireArray($arenaConfigData, "arenas." . $arenaName),
-                "arenas." . $arenaName,
+                $this->valueReader->requireArray($arenaConfigData, $arenaConfigKey),
+                $arenaConfigKey,
                 $this->detectWorldSource($arenaName, $arenaPath)
             );
         }
@@ -64,22 +65,12 @@ final class ArenaPackLoader {
     }
 
     private function detectWorldSource(string $arenaName, string $arenaPath): ArenaWorldSource {
-        $directorySourcePath = $arenaPath . DIRECTORY_SEPARATOR . $arenaName;
-        $zipSourcePath = $arenaPath . DIRECTORY_SEPARATOR . $arenaName . ".zip";
-        $tarSourcePath = $arenaPath . DIRECTORY_SEPARATOR . $arenaName . ".tar";
-
         $sources = [];
 
-        if (is_dir($directorySourcePath)) {
-            $sources[] = new ArenaWorldSource(ArenaWorldSourceType::DIRECTORY, $directorySourcePath, $arenaName);
-        }
-
-        if (is_file($zipSourcePath)) {
-            $sources[] = new ArenaWorldSource(ArenaWorldSourceType::ZIP, $zipSourcePath, $arenaName);
-        }
-
-        if (is_file($tarSourcePath)) {
-            $sources[] = new ArenaWorldSource(ArenaWorldSourceType::TAR, $tarSourcePath, $arenaName);
+        foreach ($this->getWorldSourceCandidates($arenaName, $arenaPath) as [$type, $path]) {
+            if (($type === ArenaWorldSourceType::DIRECTORY && is_dir($path)) || ($type !== ArenaWorldSourceType::DIRECTORY && is_file($path))) {
+                $sources[] = new ArenaWorldSource($type, $path, $arenaName);
+            }
         }
 
         if (\count($sources) === 1) {
@@ -103,6 +94,17 @@ final class ArenaPackLoader {
             $arenaName,
             $arenaName
         ));
+    }
+
+    /**
+     * @return list<array{ArenaWorldSourceType, string}>
+     */
+    private function getWorldSourceCandidates(string $arenaName, string $arenaPath): array {
+        return [
+            [ArenaWorldSourceType::DIRECTORY, $arenaPath . DIRECTORY_SEPARATOR . $arenaName],
+            [ArenaWorldSourceType::ZIP, $arenaPath . DIRECTORY_SEPARATOR . "$arenaName.zip"],
+            [ArenaWorldSourceType::TAR, $arenaPath . DIRECTORY_SEPARATOR . "$arenaName.tar"],
+        ];
     }
 
     /**

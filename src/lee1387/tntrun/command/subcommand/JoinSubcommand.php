@@ -27,7 +27,7 @@ final class JoinSubcommand implements Subcommand {
 
         $player->sendMessage(match ($result) {
             WaitingWorldEntryResult::ALREADY_JOINED => TextFormat::YELLOW . "You are already in the TNTRun waiting world.",
-            WaitingWorldEntryResult::WORLD_NOT_AVAILABLE => TextFormat::RED . 'The TNTRun waiting world "' . $this->plugin->getWaitingWorld()->getWorldName() . '" could not be loaded.',
+            WaitingWorldEntryResult::WORLD_NOT_AVAILABLE => TextFormat::RED . "The TNTRun waiting world \"{$this->plugin->getWaitingWorld()->getWorldName()}\" could not be loaded.",
             WaitingWorldEntryResult::TELEPORT_FAILED => TextFormat::RED . "Failed to teleport you to the TNTRun waiting world.",
         });
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun\waiting;
 
+use InvalidArgumentException;
 use lee1387\tntrun\arena\ArenaSpawn;
 use pocketmine\player\Player;
 
@@ -14,19 +15,25 @@ final class WaitingWorld {
     private array $joinedPlayerIds = [];
 
     public function __construct(
-        private WaitingWorldConfig $config
-    ) {}
+        private bool $autoJoin,
+        private string $worldName,
+        private ArenaSpawn $spawn
+    ) {
+        if ($this->worldName === "") {
+            throw new InvalidArgumentException("Waiting world name cannot be empty.");
+        }
+    }
 
     public function isAutoJoinEnabled(): bool {
-        return $this->config->isAutoJoinEnabled();
+        return $this->autoJoin;
     }
 
     public function getWorldName(): string {
-        return $this->config->getWorldName();
+        return $this->worldName;
     }
 
     public function getSpawn(): ArenaSpawn {
-        return $this->config->getSpawn();
+        return $this->spawn;
     }
 
     public function isPlayerJoined(Player $player): bool {

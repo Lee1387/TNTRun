@@ -16,6 +16,8 @@ use pocketmine\plugin\PluginOwned;
 use pocketmine\utils\TextFormat;
 
 final class TNTRunCommand extends Command implements PluginOwned {
+    private const USAGE = "/tntrun <join|leave>";
+
     /**
      * @var array<string, Subcommand>
      */
@@ -27,7 +29,7 @@ final class TNTRunCommand extends Command implements PluginOwned {
         parent::__construct(
             "tntrun",
             "Join or leave the TNTRun waiting world.",
-            "/tntrun <join|leave>"
+            self::USAGE
         );
 
         $this->setPermission("tntrun.command.use");
@@ -40,19 +42,21 @@ final class TNTRunCommand extends Command implements PluginOwned {
             return;
         }
 
+        $usageMessage = TextFormat::RED . "Usage: " . self::USAGE;
+
         if (!$sender instanceof Player) {
             $sender->sendMessage(TextFormat::RED . "This command can only be used in-game.");
             return;
         }
 
         if (\count($args) !== 1) {
-            $sender->sendMessage(TextFormat::RED . "Usage: /tntrun <join|leave>");
+            $sender->sendMessage($usageMessage);
             return;
         }
 
         $subcommand = \strtolower($args[0]);
         if (!isset($this->subcommands[$subcommand])) {
-            $sender->sendMessage(TextFormat::RED . "Usage: /tntrun <join|leave>");
+            $sender->sendMessage($usageMessage);
             return;
         }
 

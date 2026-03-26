@@ -31,7 +31,7 @@ final class EventListener implements Listener {
         }
 
         $player->kick(TextFormat::RED . match ($result) {
-            WaitingWorldEntryResult::WORLD_NOT_AVAILABLE => 'The TNTRun waiting world "' . $waitingWorld->getWorldName() . '" could not be loaded. Please try again later.',
+            WaitingWorldEntryResult::WORLD_NOT_AVAILABLE => "The TNTRun waiting world \"{$waitingWorld->getWorldName()}\" could not be loaded. Please try again later.",
             WaitingWorldEntryResult::TELEPORT_FAILED => "Failed to send you to the TNTRun waiting world. Please try again later.",
         });
     }

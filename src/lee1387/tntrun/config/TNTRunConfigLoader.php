@@ -6,7 +6,7 @@ namespace lee1387\tntrun\config;
 
 use InvalidArgumentException;
 use lee1387\tntrun\support\LeaveDestination;
-use lee1387\tntrun\waiting\WaitingWorldConfig;
+use lee1387\tntrun\waiting\WaitingWorld;
 use pocketmine\utils\Config;
 
 final class TNTRunConfigLoader {
@@ -16,19 +16,19 @@ final class TNTRunConfigLoader {
     ) {}
 
     /**
-     * @return array{waitingWorld: WaitingWorldConfig, leaveDestination: LeaveDestination}
+     * @return array{waitingWorld: WaitingWorld, leaveDestination: LeaveDestination}
      */
     public function load(): array {
         return [
-            "waitingWorld" => $this->loadWaitingWorldConfig(),
+            "waitingWorld" => $this->loadWaitingWorld(),
             "leaveDestination" => $this->loadLeaveDestination(),
         ];
     }
 
-    private function loadWaitingWorldConfig(): WaitingWorldConfig {
+    private function loadWaitingWorld(): WaitingWorld {
         $waitingWorldData = $this->valueReader->requireArray($this->config->get("waiting-world"), "waiting-world");
 
-        return new WaitingWorldConfig(
+        return new WaitingWorld(
             $this->valueReader->requireBool($waitingWorldData, "auto-join", "waiting-world.auto-join"),
             $this->valueReader->requireString($waitingWorldData, "world", "waiting-world.world"),
             $this->valueReader->loadSpawn($waitingWorldData, "spawn", "waiting-world.spawn")
