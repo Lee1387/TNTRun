@@ -7,38 +7,63 @@ namespace lee1387\tntrun\config;
 use InvalidArgumentException;
 use lee1387\tntrun\arena\ArenaConfig;
 use lee1387\tntrun\arena\ArenaSpawn;
-use lee1387\tntrun\lobby\LobbyConfig;
+use lee1387\tntrun\support\LeaveDestination;
+use lee1387\tntrun\waiting\WaitingWorldConfig;
 use pocketmine\utils\Config;
 
 final class TNTRunConfigLoader {
     public function __construct(
-        private Config $config
+        private Config $config,
+        private Config $arenasConfig
     ) {}
 
     /**
-     * @return array{lobby: LobbyConfig, arenas: array<string, ArenaConfig>}
+     * @return array{waitingWorld: WaitingWorldConfig, leaveDestination: LeaveDestination, arenas: array<string, ArenaConfig>}
      */
     public function load(): array {
         return [
-            "lobby" => $this->loadLobbyConfig(),
+            "waitingWorld" => $this->loadWaitingWorldConfig(),
+            "leaveDestination" => $this->loadLeaveDestination(),
             "arenas" => $this->loadArenaConfigs(),
         ];
     }
 
-    private function loadLobbyConfig(): LobbyConfig {
-        $lobbyData = $this->requireArray($this->config->get("lobby"), "lobby");
+    private function loadWaitingWorldConfig(): WaitingWorldConfig {
+        $waitingWorldData = $this->requireArray($this->config->get("waiting-world"), "waiting-world");
 
-        return new LobbyConfig(
-            $this->requireString($lobbyData, "world", "lobby.world"),
-            $this->loadSpawn($lobbyData, "spawn", "lobby.spawn")
+        return new WaitingWorldConfig(
+            $this->requireBool($waitingWorldData, "auto-join", "waiting-world.auto-join"),
+            $this->requireString($waitingWorldData, "world", "waiting-world.world"),
+            $this->loadSpawn($waitingWorldData, "spawn", "waiting-world.spawn")
         );
+    }
+
+    private function loadLeaveDestination(): LeaveDestination {
+        $leaveData = $this->requireArray($this->config->get("leave-destination"), "leave-destination");
+        $type = $this->requireString($leaveData, "type", "leave-destination.type");
+
+        if ($type === LeaveDestination::TYPE_WORLD) {
+            return LeaveDestination::world(
+                $this->requireString($leaveData, "world", "leave-destination.world"),
+                $this->loadSpawn($leaveData, "spawn", "leave-destination.spawn")
+            );
+        }
+
+        if ($type === LeaveDestination::TYPE_TRANSFER) {
+            return LeaveDestination::transfer(
+                $this->requireString($leaveData, "address", "leave-destination.address"),
+                $this->requireInt($leaveData, "port", "leave-destination.port")
+            );
+        }
+
+        throw new InvalidArgumentException('Config key "leave-destination.type" must be either "world" or "transfer".');
     }
 
     /**
      * @return array<string, ArenaConfig>
      */
     private function loadArenaConfigs(): array {
-        $arenasData = $this->requireArray($this->config->get("arenas"), "arenas");
+        $arenasData = $this->requireArray($this->arenasConfig->getAll(), "arenas.yml");
         $arenaConfigs = [];
 
         foreach ($arenasData as $arenaName => $arenaData) {
@@ -47,7 +72,7 @@ final class TNTRunConfigLoader {
                 throw new InvalidArgumentException(\sprintf('Duplicate arena name "%s" found in config.', $normalizedArenaName));
             }
 
-            $arenaPath = "arenas." . $normalizedArenaName;
+            $arenaPath = "arenas.yml." . $normalizedArenaName;
             $arenaConfigs[$normalizedArenaName] = $this->loadArenaConfig(
                 $normalizedArenaName,
                 $this->requireArray($arenaData, $arenaPath),
@@ -161,6 +186,21 @@ final class TNTRunConfigLoader {
         }
 
         throw new InvalidArgumentException(\sprintf('Config key "%s" must be an integer.', $path));
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function requireBool(array $data, string $key, string $path): bool {
+        if (!\array_key_exists($key, $data)) {
+            throw new InvalidArgumentException(\sprintf('Missing config key "%s".', $path));
+        }
+
+        if (!\is_bool($data[$key])) {
+            throw new InvalidArgumentException(\sprintf('Config key "%s" must be a boolean.', $path));
+        }
+
+        return $data[$key];
     }
 
     /**

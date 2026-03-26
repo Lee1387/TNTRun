@@ -1,7 +1,10 @@
 # TNTRun Configuration
 
-lobby:
-  world: "tntrunlobby"
+waiting-world:
+  # Set to `true` for dedicated TNTRun network servers that should join players to the TNTRun waiting world automatically.
+  # Set to `false` when players should use `/tntrun join` to enter the TNTRun waiting world themselves.
+  auto-join: false
+  world: "tntrun_waiting"
   spawn:
     x: 256.5
     y: 66
@@ -9,17 +12,28 @@ lobby:
     yaw: 0.0
     pitch: 0.0
 
-arenas:
-  default:
-    world: "tntrun_default"
-    spectator-spawn:
-      x: 0.5
-      y: 85.0
-      z: 0.5
-      yaw: 0.0
-      pitch: 0.0
-    elimination-y: 58
-    min-players: 2
-    max-players: 8
-    countdown-seconds: 10
-    block-fall-delay-ticks: 8
+# `world` teleports players to a local world on this server.
+# Required keys for `world`:
+#   type: world
+#   world: "world"
+#   spawn:
+#     x: 0.5
+#     y: 64.0
+#     z: 0.5
+#     yaw: 0.0
+#     pitch: 0.0
+#
+# `transfer` sends players to a different Bedrock server.
+# Required keys for `transfer`:
+#   type: transfer
+#   address: "play.example.net"
+#   port: 19132
+leave-destination:
+  type: world
+  world: "world"
+  spawn:
+    x: 0.5
+    y: 64.0
+    z: 0.5
+    yaw: 0.0
+    pitch: 0.0

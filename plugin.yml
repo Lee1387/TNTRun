@@ -4,6 +4,6 @@ api: 5.0.0
 version: 1.0.0
 
 permissions:
-  tntrun.command.join:
-    description: Allows the user to join the TNTRun lobby.
+  tntrun.command.use:
+    description: Allows the user to use the TNTRun command.
     default: true
