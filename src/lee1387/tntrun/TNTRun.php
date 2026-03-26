@@ -10,6 +10,7 @@ use lee1387\tntrun\arena\io\ArenaWorldInstaller;
 use lee1387\tntrun\arena\io\BundledArenaPackSeeder;
 use lee1387\tntrun\command\TNTRunCommand;
 use lee1387\tntrun\config\TNTRunConfigLoader;
+use lee1387\tntrun\game\GameManager;
 use lee1387\tntrun\support\LeaveDestination;
 use lee1387\tntrun\support\WorldLoader;
 use lee1387\tntrun\waiting\WaitingWorld;
@@ -20,6 +21,7 @@ use RuntimeException;
 final class TNTRun extends PluginBase {
     private WaitingWorld $waitingWorld;
     private LeaveDestination $leaveDestination;
+    private GameManager $gameManager;
     private WorldLoader $worldLoader;
     private WaitingWorldEntryService $waitingWorldEntryService;
 
@@ -49,6 +51,7 @@ final class TNTRun extends PluginBase {
 
         $this->waitingWorld = $config["waitingWorld"];
         $this->leaveDestination = $config["leaveDestination"];
+        $this->gameManager = new GameManager($arenaConfigs);
         $this->worldLoader = new WorldLoader($this->getServer()->getWorldManager());
         $this->waitingWorldEntryService = new WaitingWorldEntryService($this->waitingWorld, $this->worldLoader);
 
@@ -73,5 +76,9 @@ final class TNTRun extends PluginBase {
 
     public function getLeaveDestination(): LeaveDestination {
         return $this->leaveDestination;
+    }
+
+    public function getGameManager(): GameManager {
+        return $this->gameManager;
     }
 }
