@@ -11,6 +11,7 @@ use lee1387\tntrun\arena\io\BundledArenaPackSeeder;
 use lee1387\tntrun\command\TNTRunCommand;
 use lee1387\tntrun\config\TNTRunConfigLoader;
 use lee1387\tntrun\game\GameManager;
+use lee1387\tntrun\game\queue\task\QueueTickTask;
 use lee1387\tntrun\player\PlayerSessionManager;
 use lee1387\tntrun\support\LeaveDestination;
 use lee1387\tntrun\support\WorldLoader;
@@ -68,6 +69,7 @@ final class TNTRun extends PluginBase {
             new TNTRunCommand($this)
         );
         $this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
+        $this->getScheduler()->scheduleRepeatingTask(new QueueTickTask($this->gameManager), 20);
     }
 
     public function getWaitingWorld(): WaitingWorld {

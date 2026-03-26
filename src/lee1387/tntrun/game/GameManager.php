@@ -72,6 +72,27 @@ final class GameManager {
         return $gameInstance;
     }
 
+    public function beginStartPath(): ?GameInstance {
+        if ($this->queueAssigner->findLockedGameInstance($this->gameInstances) !== null) {
+            return null;
+        }
+
+        $gameInstance = $this->queueAssigner->findMostPopulatedReadyGameInstance($this->gameInstances);
+        if ($gameInstance === null) {
+            return null;
+        }
+
+        if (!$gameInstance->lockQueue()) {
+            return null;
+        }
+
+        return $gameInstance;
+    }
+
+    public function tick(): void {
+        $this->beginStartPath();
+    }
+
     public function removeGameInstance(GameInstance $gameInstance): void {
         foreach ($gameInstance->getPlayerIds() as $playerId) {
             $playerSession = $this->playerSessionManager->getById($playerId);
