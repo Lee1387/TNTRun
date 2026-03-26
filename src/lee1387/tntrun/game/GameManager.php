@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace lee1387\tntrun\game;
 
 use lee1387\tntrun\game\queue\QueuePool;
+use lee1387\tntrun\game\queue\QueueSettings;
 use lee1387\tntrun\player\PlayerSession;
 use lee1387\tntrun\player\PlayerSessionManager;
 
@@ -20,9 +21,9 @@ final class GameManager {
         private PlayerSessionManager $playerSessionManager
     ) {}
 
-    public function createGameInstance(QueuePool $queuePool): GameInstance {
+    public function createGameInstance(QueuePool $queuePool, QueueSettings $queueSettings): GameInstance {
         $gameInstanceId = "game_" . $this->nextGameInstanceId++;
-        $gameInstance = new GameInstance($gameInstanceId, $queuePool);
+        $gameInstance = new GameInstance($gameInstanceId, $queuePool, $queueSettings);
         $this->gameInstances[$gameInstanceId] = $gameInstance;
 
         return $gameInstance;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace lee1387\tntrun\game;
 
 use lee1387\tntrun\game\queue\QueuePool;
+use lee1387\tntrun\game\queue\QueueSettings;
 use lee1387\tntrun\game\queue\QueueState;
 use lee1387\tntrun\player\PlayerSession;
 
@@ -17,9 +18,10 @@ final class GameInstance {
 
     public function __construct(
         private string $id,
-        QueuePool $queuePool
+        QueuePool $queuePool,
+        QueueSettings $queueSettings
     ) {
-        $this->queueState = new QueueState($queuePool);
+        $this->queueState = new QueueState($queuePool, $queueSettings);
     }
 
     public function getId(): string {

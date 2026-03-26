@@ -22,7 +22,8 @@ final class QueueManager {
      */
     public function __construct(
         array $arenaConfigs,
-        private GameManager $gameManager
+        private GameManager $gameManager,
+        private QueueSettings $queueSettings
     ) {
         \ksort($arenaConfigs);
         $this->queuePools = (new QueuePoolFactory())->build($arenaConfigs);
@@ -49,7 +50,7 @@ final class QueueManager {
             return null;
         }
 
-        $gameInstance = $this->gameManager->createGameInstance($queuePool);
+        $gameInstance = $this->gameManager->createGameInstance($queuePool, $this->queueSettings);
         $gameInstance->addPlayer($playerSession);
 
         return $gameInstance;

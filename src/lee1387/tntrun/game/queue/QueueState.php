@@ -9,7 +9,8 @@ final class QueueState {
     private ?int $countdownSecondsRemaining = null;
 
     public function __construct(
-        private QueuePool $queuePool
+        private QueuePool $queuePool,
+        private QueueSettings $queueSettings
     ) {}
 
     public function getQueuePool(): QueuePool {
@@ -30,7 +31,9 @@ final class QueueState {
         }
 
         $this->queuePhase = QueuePhase::LOCKED;
-        $this->countdownSecondsRemaining = $this->queuePool->getCountdownSeconds();
+        $this->countdownSecondsRemaining = $this->isFull($playerCount)
+            ? $this->queueSettings->getFullCountdownSeconds()
+            : $this->queueSettings->getReadyCountdownSeconds();
 
         return true;
     }

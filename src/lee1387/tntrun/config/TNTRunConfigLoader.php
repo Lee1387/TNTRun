@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace lee1387\tntrun\config;
 
 use InvalidArgumentException;
+use lee1387\tntrun\game\queue\QueueSettings;
 use lee1387\tntrun\support\LeaveDestination;
 use lee1387\tntrun\waiting\WaitingWorld;
 use pocketmine\utils\Config;
@@ -16,22 +17,36 @@ final class TNTRunConfigLoader {
     ) {}
 
     /**
-     * @return array{waitingWorld: WaitingWorld, leaveDestination: LeaveDestination}
+     * @return array{waitingWorld: WaitingWorld, queueSettings: QueueSettings, leaveDestination: LeaveDestination}
      */
     public function load(): array {
+        $waitingWorldData = $this->valueReader->requireArray($this->config->get("waiting-world"), "waiting-world");
+
         return [
-            "waitingWorld" => $this->loadWaitingWorld(),
+            "waitingWorld" => $this->loadWaitingWorld($waitingWorldData),
+            "queueSettings" => $this->loadQueueSettings($waitingWorldData),
             "leaveDestination" => $this->loadLeaveDestination(),
         ];
     }
 
-    private function loadWaitingWorld(): WaitingWorld {
-        $waitingWorldData = $this->valueReader->requireArray($this->config->get("waiting-world"), "waiting-world");
-
+    /**
+     * @param array<mixed> $waitingWorldData
+     */
+    private function loadWaitingWorld(array $waitingWorldData): WaitingWorld {
         return new WaitingWorld(
             $this->valueReader->requireBool($waitingWorldData, "auto-join", "waiting-world.auto-join"),
             $this->valueReader->requireString($waitingWorldData, "world", "waiting-world.world"),
             $this->valueReader->loadSpawn($waitingWorldData, "spawn", "waiting-world.spawn")
+        );
+    }
+
+    /**
+     * @param array<mixed> $waitingWorldData
+     */
+    private function loadQueueSettings(array $waitingWorldData): QueueSettings {
+        return new QueueSettings(
+            $this->valueReader->requireInt($waitingWorldData, "ready-countdown-seconds", "waiting-world.ready-countdown-seconds"),
+            $this->valueReader->requireInt($waitingWorldData, "full-countdown-seconds", "waiting-world.full-countdown-seconds")
         );
     }
 

@@ -56,9 +56,10 @@ final class TNTRun extends PluginBase {
 
         $this->waitingWorld = $config["waitingWorld"];
         $this->leaveDestination = $config["leaveDestination"];
+        $queueSettings = $config["queueSettings"];
         $this->playerSessionManager = new PlayerSessionManager();
         $this->gameManager = new GameManager($this->playerSessionManager);
-        $this->queueManager = new QueueManager($arenaConfigs, $this->gameManager);
+        $this->queueManager = new QueueManager($arenaConfigs, $this->gameManager, $queueSettings);
         $this->worldLoader = new WorldLoader($this->getServer()->getWorldManager());
         $this->waitingWorldEntryService = new WaitingWorldEntryService(
             $this->waitingWorld,

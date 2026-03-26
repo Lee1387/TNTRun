@@ -10,7 +10,6 @@ use lee1387\tntrun\arena\ArenaConfig;
 final class QueuePool {
     private int $minPlayers;
     private int $maxPlayers;
-    private int $countdownSeconds;
 
     /**
      * @param array<string, ArenaConfig> $arenaConfigs
@@ -33,15 +32,13 @@ final class QueuePool {
         $referenceArena = $arenaConfigs[$firstArenaName];
         $this->minPlayers = $referenceArena->getMinPlayers();
         $this->maxPlayers = $referenceArena->getMaxPlayers();
-        $this->countdownSeconds = $referenceArena->getCountdownSeconds();
 
         foreach ($arenaConfigs as $arenaConfig) {
             if (
                 $arenaConfig->getMinPlayers() !== $this->minPlayers
                 || $arenaConfig->getMaxPlayers() !== $this->maxPlayers
-                || $arenaConfig->getCountdownSeconds() !== $this->countdownSeconds
             ) {
-                throw new InvalidArgumentException("All queue-pool arenas must share the same min players, max players, and countdown seconds.");
+                throw new InvalidArgumentException("All queue-pool arenas must share the same min players and max players.");
             }
         }
     }
@@ -56,9 +53,5 @@ final class QueuePool {
 
     public function getMaxPlayers(): int {
         return $this->maxPlayers;
-    }
-
-    public function getCountdownSeconds(): int {
-        return $this->countdownSeconds;
     }
 }

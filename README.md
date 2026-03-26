@@ -12,9 +12,10 @@ This file currently controls:
 
 - the TNTRun waiting world
 - whether players auto-join the waiting world on connect
+- waiting-world queue countdown behavior
 - where players are sent when they leave TNTRun
 
-Queue pools are derived automatically from arena `min-players`, `max-players`, and `countdown-seconds`.
+Queue pools are derived automatically from arena `min-players` and `max-players`.
 Players are assigned automatically after entering the waiting world.
 The current queueing logic prefers the most populated joinable queue and creates a new queue when needed.
 

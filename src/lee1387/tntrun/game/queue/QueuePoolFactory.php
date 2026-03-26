@@ -30,6 +30,6 @@ final class QueuePoolFactory {
     }
 
     private function getQueuePoolId(ArenaConfig $arenaConfig): string {
-        return "{$arenaConfig->getMinPlayers()}-{$arenaConfig->getMaxPlayers()}-{$arenaConfig->getCountdownSeconds()}";
+        return "{$arenaConfig->getMinPlayers()}-{$arenaConfig->getMaxPlayers()}";
     }
 }
