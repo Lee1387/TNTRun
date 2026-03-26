@@ -19,6 +19,12 @@ Queue pools are derived automatically from arena `min-players` and `max-players`
 Players are assigned automatically after entering the waiting world.
 The current queueing logic prefers the most populated joinable queue and creates a new queue when needed.
 
+Player-facing plugin messages live in `resources/messages.yml` and are copied to:
+
+```text
+plugin_data/TNTRun/messages.yml
+```
+
 ## Arena Packs
 
 Arenas are not defined in `config.yml`.

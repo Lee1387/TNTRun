@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace lee1387\tntrun\support;
+namespace lee1387\tntrun\infrastructure;
 
 use pocketmine\world\World;
 use pocketmine\world\WorldException;

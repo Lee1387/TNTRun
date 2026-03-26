@@ -6,7 +6,7 @@ namespace lee1387\tntrun\config;
 
 use InvalidArgumentException;
 use lee1387\tntrun\game\queue\QueueSettings;
-use lee1387\tntrun\support\LeaveDestination;
+use lee1387\tntrun\infrastructure\LeaveDestination;
 use lee1387\tntrun\waiting\WaitingWorld;
 use pocketmine\utils\Config;
 
@@ -20,7 +20,7 @@ final class TNTRunConfigLoader {
      * @return array{waitingWorld: WaitingWorld, queueSettings: QueueSettings, leaveDestination: LeaveDestination}
      */
     public function load(): array {
-        $waitingWorldData = $this->valueReader->requireArray($this->config->get("waiting-world"), "waiting-world");
+        $waitingWorldData = $this->valueReader->requireMap($this->config->get("waiting-world"), "waiting-world");
 
         return [
             "waitingWorld" => $this->loadWaitingWorld($waitingWorldData),
@@ -51,7 +51,7 @@ final class TNTRunConfigLoader {
     }
 
     private function loadLeaveDestination(): LeaveDestination {
-        $leaveData = $this->valueReader->requireArray($this->config->get("leave-destination"), "leave-destination");
+        $leaveData = $this->valueReader->requireMap($this->config->get("leave-destination"), "leave-destination");
         $type = $this->valueReader->requireString($leaveData, "type", "leave-destination.type");
 
         if ($type === LeaveDestination::TYPE_WORLD) {

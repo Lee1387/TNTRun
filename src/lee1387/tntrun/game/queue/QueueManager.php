@@ -23,7 +23,8 @@ final class QueueManager {
     public function __construct(
         array $arenaConfigs,
         private GameManager $gameManager,
-        private QueueSettings $queueSettings
+        private QueueSettings $queueSettings,
+        private QueueBroadcaster $queueBroadcaster
     ) {
         \ksort($arenaConfigs);
         $this->queuePools = (new QueuePoolFactory())->build($arenaConfigs);
@@ -31,7 +32,7 @@ final class QueueManager {
     }
 
     public function assignPlayerSession(PlayerSession $playerSession): ?GameInstance {
-        $currentGameInstance = $this->gameManager->findGameInstanceByPlayerSession($playerSession);
+        $currentGameInstance = $this->gameManager->reconcilePlayerSessionMembership($playerSession);
         if ($currentGameInstance !== null) {
             return $currentGameInstance;
         }
@@ -40,7 +41,9 @@ final class QueueManager {
 
         $gameInstance = $this->queueAssigner->findMostPopulatedJoinableGameInstance($playerSession, $this->gameManager->getGameInstances());
         if ($gameInstance !== null) {
-            $gameInstance->addPlayer($playerSession);
+            if ($gameInstance->addPlayer($playerSession)) {
+                $this->queueBroadcaster->broadcastJoin($gameInstance, $playerSession);
+            }
 
             return $gameInstance;
         }
@@ -51,48 +54,41 @@ final class QueueManager {
         }
 
         $gameInstance = $this->gameManager->createGameInstance($queuePool, $this->queueSettings);
-        $gameInstance->addPlayer($playerSession);
+        if ($gameInstance->addPlayer($playerSession)) {
+            $this->queueBroadcaster->broadcastJoin($gameInstance, $playerSession);
+        }
 
         return $gameInstance;
     }
 
     public function removePlayerSession(PlayerSession $playerSession): void {
-        $gameInstance = $this->gameManager->findGameInstanceByPlayerSession($playerSession);
+        $gameInstance = $this->gameManager->reconcilePlayerSessionMembership($playerSession);
         if ($gameInstance === null) {
             $playerSession->clearGameInstance();
             return;
         }
 
-        $gameInstance->removePlayer($playerSession);
+        if ($gameInstance->removePlayer($playerSession)) {
+            $this->queueBroadcaster->broadcastLeave($gameInstance, $playerSession);
+        }
+
         if ($gameInstance->isEmpty()) {
             $this->gameManager->removeGameInstance($gameInstance);
         }
     }
 
-    private function beginStartPath(): ?GameInstance {
-        if ($this->queueAssigner->findLockedGameInstance($this->gameManager->getGameInstances()) !== null) {
-            return null;
-        }
-
-        $gameInstance = $this->queueAssigner->findMostPopulatedReadyGameInstance($this->gameManager->getGameInstances());
-        if ($gameInstance === null) {
-            return null;
-        }
-
-        if (!$gameInstance->beginStartPath()) {
-            return null;
-        }
-
-        return $gameInstance;
-    }
-
     public function tick(): void {
-        $lockedGameInstance = $this->queueAssigner->findLockedGameInstance($this->gameManager->getGameInstances());
-        if ($lockedGameInstance !== null) {
-            $lockedGameInstance->tickStartPath();
-            return;
-        }
+        foreach ($this->gameManager->getGameInstances() as $gameInstance) {
+            if ($gameInstance->hasCompletedQueueCountdown()) {
+                continue;
+            }
 
-        $this->beginStartPath();
+            $countdownSecondsRemaining = $gameInstance->getQueueCountdownSecondsRemaining();
+            if ($countdownSecondsRemaining !== null) {
+                $this->queueBroadcaster->sendCountdown($gameInstance, $countdownSecondsRemaining);
+            }
+
+            $gameInstance->tickQueueCountdown();
+        }
     }
 }

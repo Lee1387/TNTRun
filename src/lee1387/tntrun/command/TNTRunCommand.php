@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun\command;
 
-use lee1387\tntrun\command\subcommand\JoinSubcommand;
-use lee1387\tntrun\command\subcommand\LeaveSubcommand;
 use lee1387\tntrun\command\subcommand\Subcommand;
-use lee1387\tntrun\TNTRun;
+use lee1387\tntrun\config\message\CommandMessages;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
-use pocketmine\utils\TextFormat;
 
 final class TNTRunCommand extends Command implements PluginOwned {
     private const USAGE = "/tntrun <join|leave>";
@@ -24,7 +21,9 @@ final class TNTRunCommand extends Command implements PluginOwned {
     private array $subcommands = [];
 
     public function __construct(
-        private TNTRun $plugin
+        private Plugin $plugin,
+        private CommandMessages $messages,
+        Subcommand ...$subcommands
     ) {
         parent::__construct(
             "tntrun",
@@ -33,8 +32,10 @@ final class TNTRunCommand extends Command implements PluginOwned {
         );
 
         $this->setPermission("tntrun.command.use");
-        $this->registerSubcommand(new JoinSubcommand($this->plugin));
-        $this->registerSubcommand(new LeaveSubcommand($this->plugin));
+
+        foreach ($subcommands as $subcommand) {
+            $this->registerSubcommand($subcommand);
+        }
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args): void {
@@ -42,10 +43,10 @@ final class TNTRunCommand extends Command implements PluginOwned {
             return;
         }
 
-        $usageMessage = TextFormat::RED . "Usage: " . self::USAGE;
+        $usageMessage = $this->messages->usage();
 
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TextFormat::RED . "This command can only be used in-game.");
+            $sender->sendMessage($this->messages->playerOnly());
             return;
         }
 

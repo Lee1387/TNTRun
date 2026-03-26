@@ -13,7 +13,9 @@ final class PlayerSessionManager {
     private array $playerSessions = [];
 
     public function get(Player $player): ?PlayerSession {
-        return $this->getById($player->getUniqueId()->toString());
+        $playerId = $player->getUniqueId()->toString();
+
+        return $this->getById($playerId);
     }
 
     public function getById(string $playerId): ?PlayerSession {
@@ -27,6 +29,7 @@ final class PlayerSessionManager {
     }
 
     public function remove(Player $player): void {
-        unset($this->playerSessions[$player->getUniqueId()->toString()]);
+        $playerId = $player->getUniqueId()->toString();
+        unset($this->playerSessions[$playerId]);
     }
 }

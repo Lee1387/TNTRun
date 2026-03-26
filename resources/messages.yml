@@ -1,0 +1,28 @@
+command:
+  usage: "&cUsage: /tntrun <join|leave>"
+  player-only: "&cThis command can only be used in-game."
+
+join:
+  usage: "&cUsage: /tntrun join"
+  already-joined: "&eYou are already in the TNTRun waiting world."
+  world-not-available: "&cThe TNTRun waiting world \"{world}\" could not be loaded."
+  teleport-failed: "&cFailed to teleport you to the TNTRun waiting world."
+
+leave:
+  usage: "&cUsage: /tntrun leave"
+  not-in-waiting-world: "&eYou are not in the TNTRun waiting world."
+  destination-failed: "&cFailed to send you to the configured leave destination."
+
+auto-join:
+  world-not-available: "&cThe TNTRun waiting world \"{world}\" could not be loaded. Please try again later."
+  teleport-failed: "&cFailed to send you to the TNTRun waiting world. Please try again later."
+
+queue:
+  join-broadcast: "&b{player} joined the game &7(&f{current}&7/&f{max} &7players)"
+  leave-broadcast: "&c{player} left the game &7(&f{current}&7/&f{max} &7players)"
+  countdown-tip: "&bGame starts in &f{seconds}"
+  countdown-title: "&b{seconds}"
+  countdown-title-overrides:
+    "3": "&e{seconds}"
+    "2": "&6{seconds}"
+    "1": "&c{seconds}"

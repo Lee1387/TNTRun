@@ -45,7 +45,7 @@ final class ArenaPackLoader {
             $arenaConfigKey = "arenas.$arenaName";
             $arenaConfigs[$arenaName] = $this->loadArenaConfig(
                 $arenaName,
-                $this->valueReader->requireArray($arenaConfigData, $arenaConfigKey),
+                $this->valueReader->requireMap($arenaConfigData, $arenaConfigKey),
                 $arenaConfigKey,
                 $this->detectWorldSource($arenaName, $arenaPath)
             );

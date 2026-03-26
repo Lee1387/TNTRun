@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace lee1387\tntrun\waiting;
 
 use lee1387\tntrun\game\queue\QueueManager;
+use lee1387\tntrun\infrastructure\WorldLoader;
 use lee1387\tntrun\player\PlayerSessionManager;
-use lee1387\tntrun\support\WorldLoader;
 use pocketmine\player\Player;
 
 final class WaitingWorldEntryService {

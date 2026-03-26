@@ -4,13 +4,20 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun\command\subcommand;
 
-use lee1387\tntrun\TNTRun;
+use lee1387\tntrun\config\message\LeaveMessages;
+use lee1387\tntrun\game\queue\QueueManager;
+use lee1387\tntrun\infrastructure\LeaveDestination;
+use lee1387\tntrun\infrastructure\WorldLoader;
+use lee1387\tntrun\player\PlayerSessionManager;
 use pocketmine\player\Player;
-use pocketmine\utils\TextFormat;
 
 final class LeaveSubcommand implements Subcommand {
     public function __construct(
-        private TNTRun $plugin
+        private LeaveMessages $messages,
+        private PlayerSessionManager $playerSessionManager,
+        private LeaveDestination $leaveDestination,
+        private WorldLoader $worldLoader,
+        private QueueManager $queueManager
     ) {}
 
     public function getName(): string {
@@ -19,22 +26,22 @@ final class LeaveSubcommand implements Subcommand {
 
     public function execute(Player $player, array $args): void {
         if ($args !== []) {
-            $player->sendMessage(TextFormat::RED . "Usage: /tntrun leave");
+            $player->sendMessage($this->messages->usage());
             return;
         }
 
-        $playerSession = $this->plugin->getPlayerSessionManager()->get($player);
+        $playerSession = $this->playerSessionManager->get($player);
         if ($playerSession === null || !$playerSession->isInWaitingWorld()) {
-            $player->sendMessage(TextFormat::YELLOW . "You are not in the TNTRun waiting world.");
+            $player->sendMessage($this->messages->notInWaitingWorld());
             return;
         }
 
-        if (!$this->plugin->getLeaveDestination()->send($player, $this->plugin->getWorldLoader())) {
-            $player->sendMessage(TextFormat::RED . "Failed to send you to the configured leave destination.");
+        if (!$this->leaveDestination->send($player, $this->worldLoader)) {
+            $player->sendMessage($this->messages->destinationFailed());
             return;
         }
 
-        $this->plugin->getQueueManager()->removePlayerSession($playerSession);
+        $this->queueManager->removePlayerSession($playerSession);
         $playerSession->leaveWaitingWorld();
     }
 }

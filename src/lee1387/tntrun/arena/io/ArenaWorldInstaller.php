@@ -5,20 +5,19 @@ declare(strict_types=1);
 namespace lee1387\tntrun\arena\io;
 
 use DirectoryIterator;
-use FilesystemIterator;
 use lee1387\tntrun\arena\ArenaConfig;
-use PharData;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use RuntimeException;
-use SplFileInfo;
-use ZipArchive;
 
 final class ArenaWorldInstaller {
+    private ArenaWorldArchiveExtractor $archiveExtractor;
+
     public function __construct(
         private string $worldsDirectory,
-        private string $temporaryDirectory
-    ) {}
+        private string $temporaryDirectory,
+        ?ArenaWorldArchiveExtractor $archiveExtractor = null
+    ) {
+        $this->archiveExtractor = $archiveExtractor ?? new ArenaWorldArchiveExtractor();
+    }
 
     /**
      * @param array<string, ArenaConfig> $arenaConfigs
@@ -65,13 +64,7 @@ final class ArenaWorldInstaller {
         $temporaryExtractionPath = $this->createTemporaryExtractionPath($arenaName);
 
         try {
-            if ($worldSource->getType() === ArenaWorldSourceType::ZIP) {
-                $this->extractZip($worldSource->getPath(), $temporaryExtractionPath, $arenaName);
-            } else {
-                $this->extractTar($worldSource->getPath(), $temporaryExtractionPath, $arenaName);
-            }
-
-            $extractedWorldPath = $this->resolveExtractedWorldPath($temporaryExtractionPath, $worldSource->getWorldName(), $arenaName);
+            $extractedWorldPath = $this->archiveExtractor->extract($worldSource, $temporaryExtractionPath, $arenaName);
             $this->copyDirectory($extractedWorldPath, $stagingWorldPath);
         } finally {
             $this->deleteDirectory($temporaryExtractionPath);
@@ -89,62 +82,6 @@ final class ArenaWorldInstaller {
         return $this->worldsDirectory . DIRECTORY_SEPARATOR . "." . $worldName . "_install_" . uniqid("", true);
     }
 
-    private function extractZip(string $archivePath, string $destinationPath, string $arenaName): void {
-        $zipArchive = new ZipArchive();
-        if ($zipArchive->open($archivePath) !== true) {
-            throw new RuntimeException(\sprintf('Failed to open ZIP world source for arena "%s".', $arenaName));
-        }
-
-        try {
-            if (!$zipArchive->extractTo($destinationPath)) {
-                throw new RuntimeException(\sprintf('Failed to extract ZIP world source for arena "%s".', $arenaName));
-            }
-        } finally {
-            $zipArchive->close();
-        }
-    }
-
-    private function extractTar(string $archivePath, string $destinationPath, string $arenaName): void {
-        try {
-            $pharData = new PharData($archivePath);
-            $pharData->extractTo($destinationPath, null, true);
-        } catch (\Exception $exception) {
-            throw new RuntimeException(
-                \sprintf('Failed to extract TAR world source for arena "%s".', $arenaName),
-                previous: $exception
-            );
-        }
-    }
-
-    private function resolveExtractedWorldPath(string $extractionPath, string $worldName, string $arenaName): string {
-        $expectedWorldPath = $extractionPath . DIRECTORY_SEPARATOR . $worldName;
-        if ($this->isValidWorldDirectory($expectedWorldPath)) {
-            return $expectedWorldPath;
-        }
-
-        if ($this->isValidWorldDirectory($extractionPath)) {
-            return $extractionPath;
-        }
-
-        $worldDirectories = $this->findWorldDirectories($extractionPath);
-
-        if (\count($worldDirectories) === 1) {
-            return $worldDirectories[0];
-        }
-
-        if ($worldDirectories === []) {
-            throw new RuntimeException(\sprintf(
-                'Failed to resolve the extracted world folder for arena "%s". The archive must contain a valid world with "level.dat".',
-                $arenaName
-            ));
-        }
-
-        throw new RuntimeException(\sprintf(
-            'Failed to resolve the extracted world folder for arena "%s". Multiple possible world folders were found in the archive.',
-            $arenaName
-        ));
-    }
-
     private function assertWorldInstalled(string $worldPath, string $arenaName): void {
         if (!$this->isValidWorldDirectory($worldPath)) {
             throw new RuntimeException(\sprintf(
@@ -152,35 +89,6 @@ final class ArenaWorldInstaller {
                 $arenaName
             ));
         }
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function findWorldDirectories(string $directoryPath): array {
-        $worldDirectories = [];
-
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($directoryPath, FilesystemIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::SELF_FIRST
-        );
-
-        foreach ($iterator as $item) {
-            if (!$item instanceof SplFileInfo) {
-                continue;
-            }
-
-            if (!$item->isDir()) {
-                continue;
-            }
-
-            $candidatePath = $item->getPathname();
-            if ($this->isValidWorldDirectory($candidatePath)) {
-                $worldDirectories[] = $candidatePath;
-            }
-        }
-
-        return $worldDirectories;
     }
 
     private function copyDirectory(string $sourcePath, string $destinationPath): void {

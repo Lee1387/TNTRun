@@ -12,21 +12,30 @@ final class ConfigValueReader {
      * @param array<string, mixed> $data
      * @return array<string, mixed>
      */
-    public function requireArrayKey(array $data, string $key, string $path): array {
+    public function requireMapKey(array $data, string $key, string $path): array {
         if (!\array_key_exists($key, $data)) {
             throw new InvalidArgumentException(\sprintf('Missing config key "%s".', $path));
         }
 
-        return $this->requireArray($data[$key], $path);
+        return $this->requireMap($data[$key], $path);
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<mixed>
      */
     public function requireArray(mixed $value, string $path): array {
         if (!\is_array($value)) {
             throw new InvalidArgumentException(\sprintf('Config key "%s" must be an array.', $path));
         }
+
+        return $value;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function requireMap(mixed $value, string $path): array {
+        $value = $this->requireArray($value, $path);
 
         foreach ($value as $key => $_) {
             if (!\is_string($key)) {
@@ -123,7 +132,7 @@ final class ConfigValueReader {
      * @param array<string, mixed> $data
      */
     public function loadSpawn(array $data, string $key, string $path): ArenaSpawn {
-        $spawnData = $this->requireArrayKey($data, $key, $path);
+        $spawnData = $this->requireMapKey($data, $key, $path);
 
         return new ArenaSpawn(
             $this->requireNumeric($spawnData, "x", $path . ".x"),
@@ -151,7 +160,7 @@ final class ConfigValueReader {
 
         foreach ($data[$key] as $index => $spawnData) {
             $spawnPath = "$path.$index";
-            $spawnMap = $this->requireArray($spawnData, $spawnPath);
+            $spawnMap = $this->requireMap($spawnData, $spawnPath);
 
             $spawns[] = new ArenaSpawn(
                 $this->requireNumeric($spawnMap, "x", $spawnPath . ".x"),

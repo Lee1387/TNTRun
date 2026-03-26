@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun\command\subcommand;
 
-use lee1387\tntrun\TNTRun;
+use lee1387\tntrun\config\message\JoinMessages;
+use lee1387\tntrun\waiting\WaitingWorld;
 use lee1387\tntrun\waiting\WaitingWorldEntryResult;
+use lee1387\tntrun\waiting\WaitingWorldEntryService;
 use pocketmine\player\Player;
-use pocketmine\utils\TextFormat;
 
 final class JoinSubcommand implements Subcommand {
     public function __construct(
-        private TNTRun $plugin
+        private JoinMessages $messages,
+        private WaitingWorld $waitingWorld,
+        private WaitingWorldEntryService $waitingWorldEntryService
     ) {}
 
     public function getName(): string {
@@ -20,20 +23,20 @@ final class JoinSubcommand implements Subcommand {
 
     public function execute(Player $player, array $args): void {
         if ($args !== []) {
-            $player->sendMessage(TextFormat::RED . "Usage: /tntrun join");
+            $player->sendMessage($this->messages->usage());
             return;
         }
 
-        $result = $this->plugin->getWaitingWorldEntryService()->enter($player);
+        $result = $this->waitingWorldEntryService->enter($player);
 
         if ($result === WaitingWorldEntryResult::SUCCESS) {
             return;
         }
 
         $player->sendMessage(match ($result) {
-            WaitingWorldEntryResult::ALREADY_JOINED => TextFormat::YELLOW . "You are already in the TNTRun waiting world.",
-            WaitingWorldEntryResult::WORLD_NOT_AVAILABLE => TextFormat::RED . "The TNTRun waiting world \"{$this->plugin->getWaitingWorld()->getWorldName()}\" could not be loaded.",
-            WaitingWorldEntryResult::TELEPORT_FAILED => TextFormat::RED . "Failed to teleport you to the TNTRun waiting world.",
+            WaitingWorldEntryResult::ALREADY_JOINED => $this->messages->alreadyJoined(),
+            WaitingWorldEntryResult::WORLD_NOT_AVAILABLE => $this->messages->worldNotAvailable($this->waitingWorld->getWorldName()),
+            WaitingWorldEntryResult::TELEPORT_FAILED => $this->messages->teleportFailed(),
         });
     }
 }

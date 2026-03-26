@@ -32,16 +32,8 @@ final class GameInstance {
         return $this->queueState->getQueuePool();
     }
 
-    public function isReadyToStart(): bool {
-        return $this->queueState->isReady();
-    }
-
-    public function hasStartPathInProgress(): bool {
-        return $this->queueState->isLocked();
-    }
-
-    public function beginStartPath(): bool {
-        return $this->queueState->lock($this->getPlayerCount());
+    public function hasCompletedQueueCountdown(): bool {
+        return $this->queueState->hasCompletedCountdown();
     }
 
     public function hasPlayer(PlayerSession $playerSession): bool {
@@ -100,7 +92,11 @@ final class GameInstance {
         return $this->playerIds === [];
     }
 
-    public function tickStartPath(): bool {
+    public function getQueueCountdownSecondsRemaining(): ?int {
+        return $this->queueState->getCountdownSecondsRemaining();
+    }
+
+    public function tickQueueCountdown(): bool {
         return $this->queueState->tickCountdown();
     }
 

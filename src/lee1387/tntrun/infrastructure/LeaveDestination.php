@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace lee1387\tntrun\support;
+namespace lee1387\tntrun\infrastructure;
 
 use InvalidArgumentException;
 use lee1387\tntrun\arena\ArenaSpawn;

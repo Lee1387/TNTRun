@@ -33,43 +33,6 @@ final class QueueAssigner {
     }
 
     /**
-     * @param array<string, GameInstance> $gameInstances
-     */
-    public function findMostPopulatedReadyGameInstance(array $gameInstances): ?GameInstance {
-        $selectedGameInstance = null;
-        $selectedPlayerCount = -1;
-
-        foreach ($gameInstances as $gameInstance) {
-            if (!$gameInstance->isReadyToStart()) {
-                continue;
-            }
-
-            $playerCount = $gameInstance->getPlayerCount();
-            if ($playerCount <= $selectedPlayerCount) {
-                continue;
-            }
-
-            $selectedGameInstance = $gameInstance;
-            $selectedPlayerCount = $playerCount;
-        }
-
-        return $selectedGameInstance;
-    }
-
-    /**
-     * @param array<string, GameInstance> $gameInstances
-     */
-    public function findLockedGameInstance(array $gameInstances): ?GameInstance {
-        foreach ($gameInstances as $gameInstance) {
-            if ($gameInstance->hasStartPathInProgress()) {
-                return $gameInstance;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * @param array<string, QueuePool> $queuePools
      * @param array<string, GameInstance> $gameInstances
      */

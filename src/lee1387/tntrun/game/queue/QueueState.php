@@ -17,25 +17,12 @@ final class QueueState {
         return $this->queuePool;
     }
 
-    public function isReady(): bool {
-        return $this->queuePhase === QueuePhase::READY;
+    public function hasCompletedCountdown(): bool {
+        return $this->queuePhase === QueuePhase::COUNTDOWN_COMPLETE;
     }
 
-    public function isLocked(): bool {
-        return $this->queuePhase === QueuePhase::LOCKED;
-    }
-
-    public function lock(int $playerCount): bool {
-        if ($this->queuePhase !== QueuePhase::READY || !$this->isStartable($playerCount)) {
-            return false;
-        }
-
-        $this->queuePhase = QueuePhase::LOCKED;
-        $this->countdownSecondsRemaining = $this->isFull($playerCount)
-            ? $this->queueSettings->getFullCountdownSeconds()
-            : $this->queueSettings->getReadyCountdownSeconds();
-
-        return true;
+    public function getCountdownSecondsRemaining(): ?int {
+        return $this->countdownSecondsRemaining;
     }
 
     public function isFull(int $playerCount): bool {
@@ -54,7 +41,7 @@ final class QueueState {
     }
 
     public function tickCountdown(): bool {
-        if (!$this->isLocked() || $this->countdownSecondsRemaining === null || $this->countdownSecondsRemaining === 0) {
+        if ($this->queuePhase !== QueuePhase::READY || $this->countdownSecondsRemaining === null || $this->countdownSecondsRemaining === 0) {
             return false;
         }
 
@@ -67,13 +54,27 @@ final class QueueState {
     }
 
     public function refresh(int $playerCount): void {
-        if (
-            $this->queuePhase !== QueuePhase::WAITING
-            && $this->queuePhase !== QueuePhase::READY
-        ) {
+        if ($this->queuePhase === QueuePhase::COUNTDOWN_COMPLETE) {
             return;
         }
 
-        $this->queuePhase = $this->isStartable($playerCount) ? QueuePhase::READY : QueuePhase::WAITING;
+        if (!$this->isStartable($playerCount)) {
+            $this->queuePhase = QueuePhase::WAITING;
+            $this->countdownSecondsRemaining = null;
+
+            return;
+        }
+
+        $this->queuePhase = QueuePhase::READY;
+        if ($this->countdownSecondsRemaining === null) {
+            $this->countdownSecondsRemaining = $this->queueSettings->getReadyCountdownSeconds();
+        }
+
+        if (
+            $this->isFull($playerCount)
+            && $this->countdownSecondsRemaining > $this->queueSettings->getFullCountdownSeconds()
+        ) {
+            $this->countdownSecondsRemaining = $this->queueSettings->getFullCountdownSeconds();
+        }
     }
 }
