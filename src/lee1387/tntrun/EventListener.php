@@ -42,11 +42,7 @@ final class EventListener implements Listener {
             return;
         }
 
-        $gameInstance = $this->plugin->getGameManager()->findGameInstanceByPlayerSession($playerSession);
-        if ($gameInstance !== null) {
-            $gameInstance->removePlayer($playerSession);
-        }
-
+        $this->plugin->getGameManager()->removePlayerSession($playerSession);
         $this->plugin->getWaitingWorld()->leavePlayer($playerSession);
         $this->plugin->getPlayerSessionManager()->remove($event->getPlayer());
     }
@@ -78,6 +74,7 @@ final class EventListener implements Listener {
             return;
         }
 
+        $this->plugin->getGameManager()->removePlayerSession($playerSession);
         $waitingWorld->leavePlayer($playerSession);
     }
 
@@ -94,11 +91,7 @@ final class EventListener implements Listener {
             return;
         }
 
-        $gameInstance = $this->plugin->getGameManager()->findGameInstanceByPlayerSession($playerSession);
-        if ($gameInstance !== null) {
-            $gameInstance->removePlayer($playerSession);
-        }
-
+        $this->plugin->getGameManager()->removePlayerSession($playerSession);
         $this->plugin->getWaitingWorld()->leavePlayer($playerSession);
         $this->plugin->getPlayerSessionManager()->remove($event->getPlayer());
     }

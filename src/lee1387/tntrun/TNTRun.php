@@ -56,7 +56,12 @@ final class TNTRun extends PluginBase {
         $this->playerSessionManager = new PlayerSessionManager();
         $this->gameManager = new GameManager($arenaConfigs, $this->playerSessionManager);
         $this->worldLoader = new WorldLoader($this->getServer()->getWorldManager());
-        $this->waitingWorldEntryService = new WaitingWorldEntryService($this->waitingWorld, $this->playerSessionManager, $this->worldLoader);
+        $this->waitingWorldEntryService = new WaitingWorldEntryService(
+            $this->waitingWorld,
+            $this->gameManager,
+            $this->playerSessionManager,
+            $this->worldLoader
+        );
 
         $this->getServer()->getCommandMap()->register(
             $this->getDescription()->getName(),

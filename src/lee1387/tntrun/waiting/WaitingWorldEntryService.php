@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun\waiting;
 
+use lee1387\tntrun\game\GameManager;
 use lee1387\tntrun\player\PlayerSessionManager;
 use lee1387\tntrun\support\WorldLoader;
 use pocketmine\player\Player;
@@ -11,6 +12,7 @@ use pocketmine\player\Player;
 final class WaitingWorldEntryService {
     public function __construct(
         private WaitingWorld $waitingWorld,
+        private GameManager $gameManager,
         private PlayerSessionManager $playerSessionManager,
         private WorldLoader $worldLoader
     ) {}
@@ -34,6 +36,8 @@ final class WaitingWorldEntryService {
         if (!$this->waitingWorld->joinPlayer($playerSession)) {
             return WaitingWorldEntryResult::ALREADY_JOINED;
         }
+
+        $this->gameManager->assignPlayerSession($playerSession);
 
         return WaitingWorldEntryResult::SUCCESS;
     }

@@ -30,11 +30,7 @@ final class LeaveSubcommand implements Subcommand {
             return;
         }
 
-        $gameInstance = $this->plugin->getGameManager()->findGameInstanceByPlayerSession($playerSession);
-        if ($gameInstance !== null) {
-            $gameInstance->removePlayer($playerSession);
-        }
-
+        $this->plugin->getGameManager()->removePlayerSession($playerSession);
         $waitingWorld->leavePlayer($playerSession);
     }
 }

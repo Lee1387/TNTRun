@@ -60,6 +60,18 @@ final class GameInstance {
         return true;
     }
 
+    public function canAcceptPlayer(PlayerSession $playerSession): bool {
+        if ($this->state !== GameState::WAITING) {
+            return false;
+        }
+
+        if ($this->hasPlayer($playerSession)) {
+            return true;
+        }
+
+        return !$this->isFull();
+    }
+
     public function removePlayer(PlayerSession $playerSession): bool {
         $playerId = $playerSession->getPlayerId();
         if (!isset($this->playerIds[$playerId])) {
@@ -76,6 +88,14 @@ final class GameInstance {
 
     public function getPlayerCount(): int {
         return \count($this->playerIds);
+    }
+
+    public function isFull(): bool {
+        if ($this->arenaConfig === null) {
+            return false;
+        }
+
+        return $this->getPlayerCount() >= $this->arenaConfig->getMaxPlayers();
     }
 
     public function isEmpty(): bool {

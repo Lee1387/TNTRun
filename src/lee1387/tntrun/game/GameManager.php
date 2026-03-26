@@ -62,6 +62,20 @@ final class GameManager {
         return $gameInstance;
     }
 
+    public function assignPlayerSession(PlayerSession $playerSession): GameInstance {
+        $currentGameInstance = $this->findGameInstanceByPlayerSession($playerSession);
+        if ($currentGameInstance !== null) {
+            return $currentGameInstance;
+        }
+
+        $playerSession->clearGameInstance();
+
+        $gameInstance = $this->findJoinableGameInstance($playerSession) ?? $this->createGameInstance($this->getDefaultArenaConfig());
+        $gameInstance->addPlayer($playerSession);
+
+        return $gameInstance;
+    }
+
     public function removeGameInstance(GameInstance $gameInstance): void {
         foreach ($gameInstance->getPlayerIds() as $playerId) {
             $playerSession = $this->playerSessionManager->getById($playerId);
@@ -80,5 +94,37 @@ final class GameManager {
         }
 
         return $this->getGameInstance($gameInstanceId);
+    }
+
+    public function removePlayerSession(PlayerSession $playerSession): void {
+        $gameInstance = $this->findGameInstanceByPlayerSession($playerSession);
+        if ($gameInstance === null) {
+            $playerSession->clearGameInstance();
+            return;
+        }
+
+        $gameInstance->removePlayer($playerSession);
+        if ($gameInstance->isEmpty()) {
+            $this->removeGameInstance($gameInstance);
+        }
+    }
+
+    private function getDefaultArenaConfig(): ?ArenaConfig {
+        $arenaName = \array_key_first($this->arenaConfigs);
+        if ($arenaName === null) {
+            return null;
+        }
+
+        return $this->arenaConfigs[$arenaName];
+    }
+
+    private function findJoinableGameInstance(PlayerSession $playerSession): ?GameInstance {
+        foreach ($this->gameInstances as $gameInstance) {
+            if ($gameInstance->canAcceptPlayer($playerSession)) {
+                return $gameInstance;
+            }
+        }
+
+        return null;
     }
 }
