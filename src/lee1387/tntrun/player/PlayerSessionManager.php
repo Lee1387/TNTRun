@@ -18,7 +18,7 @@ final class PlayerSessionManager {
         return $this->getById($playerId);
     }
 
-    public function getById(string $playerId): ?PlayerSession {
+    private function getById(string $playerId): ?PlayerSession {
         return $this->playerSessions[$playerId] ?? null;
     }
 

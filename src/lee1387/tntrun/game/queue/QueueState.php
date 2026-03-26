@@ -13,8 +13,12 @@ final class QueueState {
         private QueueSettings $queueSettings
     ) {}
 
-    public function getQueuePool(): QueuePool {
-        return $this->queuePool;
+    public function belongsToQueuePool(string $queuePoolId): bool {
+        return $this->queuePool->getId() === $queuePoolId;
+    }
+
+    public function getMaxPlayers(): int {
+        return $this->queuePool->getMaxPlayers();
     }
 
     public function hasCompletedCountdown(): bool {

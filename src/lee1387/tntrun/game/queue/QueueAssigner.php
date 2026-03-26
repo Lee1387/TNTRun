@@ -5,18 +5,17 @@ declare(strict_types=1);
 namespace lee1387\tntrun\game\queue;
 
 use lee1387\tntrun\game\GameInstance;
-use lee1387\tntrun\player\PlayerSession;
 
 final class QueueAssigner {
     /**
      * @param array<string, GameInstance> $gameInstances
      */
-    public function findMostPopulatedJoinableGameInstance(PlayerSession $playerSession, array $gameInstances): ?GameInstance {
+    public function findMostPopulatedJoinableGameInstance(array $gameInstances): ?GameInstance {
         $selectedGameInstance = null;
         $selectedPlayerCount = -1;
 
         foreach ($gameInstances as $gameInstance) {
-            if (!$gameInstance->canAcceptPlayer($playerSession)) {
+            if (!$gameInstance->canAcceptNewPlayers()) {
                 continue;
             }
 
@@ -46,7 +45,7 @@ final class QueueAssigner {
             $gameInstanceCount = 0;
 
             foreach ($gameInstances as $gameInstance) {
-                if ($gameInstance->getQueuePool()->getId() !== $queuePool->getId()) {
+                if (!$gameInstance->belongsToQueuePool($queuePool->getId())) {
                     continue;
                 }
 

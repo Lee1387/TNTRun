@@ -6,7 +6,6 @@ namespace lee1387\tntrun\player;
 
 final class PlayerSession {
     private bool $inWaitingWorld = false;
-    private ?string $gameInstanceId = null;
     private bool $managedWaitingWorldExit = false;
 
     public function __construct(
@@ -40,18 +39,6 @@ final class PlayerSession {
         $this->managedWaitingWorldExit = false;
 
         return true;
-    }
-
-    public function getGameInstanceId(): ?string {
-        return $this->gameInstanceId;
-    }
-
-    public function assignGameInstance(string $gameInstanceId): void {
-        $this->gameInstanceId = $gameInstanceId;
-    }
-
-    public function clearGameInstance(): void {
-        $this->gameInstanceId = null;
     }
 
     public function markManagedWaitingWorldExit(): void {

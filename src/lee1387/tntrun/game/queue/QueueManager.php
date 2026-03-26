@@ -32,16 +32,14 @@ final class QueueManager {
     }
 
     public function assignPlayerSession(PlayerSession $playerSession): ?GameInstance {
-        $currentGameInstance = $this->gameManager->reconcilePlayerSessionMembership($playerSession);
+        $currentGameInstance = $this->gameManager->findGameInstanceByPlayerSession($playerSession);
         if ($currentGameInstance !== null) {
             return $currentGameInstance;
         }
 
-        $playerSession->clearGameInstance();
-
-        $gameInstance = $this->queueAssigner->findMostPopulatedJoinableGameInstance($playerSession, $this->gameManager->getGameInstances());
+        $gameInstance = $this->queueAssigner->findMostPopulatedJoinableGameInstance($this->gameManager->getGameInstances());
         if ($gameInstance !== null) {
-            if ($gameInstance->addPlayer($playerSession)) {
+            if ($this->gameManager->assignPlayerSession($gameInstance, $playerSession)) {
                 $this->queueBroadcaster->broadcastJoin($gameInstance, $playerSession);
             }
 
@@ -54,7 +52,7 @@ final class QueueManager {
         }
 
         $gameInstance = $this->gameManager->createGameInstance($queuePool, $this->queueSettings);
-        if ($gameInstance->addPlayer($playerSession)) {
+        if ($this->gameManager->assignPlayerSession($gameInstance, $playerSession)) {
             $this->queueBroadcaster->broadcastJoin($gameInstance, $playerSession);
         }
 
@@ -62,15 +60,12 @@ final class QueueManager {
     }
 
     public function removePlayerSession(PlayerSession $playerSession): void {
-        $gameInstance = $this->gameManager->reconcilePlayerSessionMembership($playerSession);
+        $gameInstance = $this->gameManager->removePlayerSession($playerSession);
         if ($gameInstance === null) {
-            $playerSession->clearGameInstance();
             return;
         }
 
-        if ($gameInstance->removePlayer($playerSession)) {
-            $this->queueBroadcaster->broadcastLeave($gameInstance, $playerSession);
-        }
+        $this->queueBroadcaster->broadcastLeave($gameInstance, $playerSession);
 
         if ($gameInstance->isEmpty()) {
             $this->gameManager->removeGameInstance($gameInstance);

@@ -21,7 +21,7 @@ final class QueueBroadcaster {
             $this->messages->joinBroadcast(
                 $this->resolvePlayerName($playerSession),
                 $gameInstance->getPlayerCount(),
-                $gameInstance->getQueuePool()->getMaxPlayers()
+                $gameInstance->getMaxPlayers()
             )
         );
     }
@@ -32,7 +32,7 @@ final class QueueBroadcaster {
             $this->messages->leaveBroadcast(
                 $this->resolvePlayerName($playerSession),
                 $gameInstance->getPlayerCount(),
-                $gameInstance->getQueuePool()->getMaxPlayers()
+                $gameInstance->getMaxPlayers()
             )
         );
     }

@@ -18,12 +18,15 @@ use lee1387\tntrun\config\TNTRunConfigLoader;
 use lee1387\tntrun\game\GameManager;
 use lee1387\tntrun\game\queue\QueueBroadcaster;
 use lee1387\tntrun\game\queue\QueueManager;
+use lee1387\tntrun\game\queue\QueueSettings;
 use lee1387\tntrun\game\queue\task\QueueTickTask;
+use lee1387\tntrun\infrastructure\LeaveDestination;
 use lee1387\tntrun\infrastructure\OnlinePlayerRegistry;
 use lee1387\tntrun\infrastructure\WorldLoader;
 use lee1387\tntrun\player\PlayerLifecycleListener;
 use lee1387\tntrun\player\PlayerSessionManager;
 use lee1387\tntrun\waiting\AutoJoinListener;
+use lee1387\tntrun\waiting\WaitingWorld;
 use lee1387\tntrun\waiting\WaitingWorldEntryService;
 use lee1387\tntrun\waiting\WaitingWorldExitListener;
 use pocketmine\event\Listener;
@@ -49,47 +52,33 @@ final class TNTRunBootstrap {
 
         $onlinePlayerRegistry = new OnlinePlayerRegistry();
         $playerSessionManager = new PlayerSessionManager();
-        $gameManager = new GameManager($playerSessionManager);
-        $queueBroadcaster = new QueueBroadcaster($onlinePlayerRegistry, $messages->queue());
-        $queueManager = new QueueManager($arenaConfigs, $gameManager, $queueSettings, $queueBroadcaster);
+        $queueManager = $this->createQueueManager($arenaConfigs, $queueSettings, $onlinePlayerRegistry, $messages);
         $worldLoader = new WorldLoader($this->plugin->getServer()->getWorldManager());
-        $waitingWorldEntryService = new WaitingWorldEntryService(
+        $waitingWorldEntryService = $this->createWaitingWorldEntryService(
             $waitingWorld,
             $queueManager,
             $playerSessionManager,
             $worldLoader
         );
 
-        $this->registerCommand(new TNTRunCommand(
-            $this->plugin,
-            $messages->command(),
-            new JoinSubcommand($messages->join(), $waitingWorld, $waitingWorldEntryService),
-            new LeaveSubcommand(
-                $messages->leave(),
-                $playerSessionManager,
-                $leaveDestination,
-                $worldLoader,
-                $queueManager
-            )
-        ));
-
-        $this->registerListener(new PlayerLifecycleListener(
-            $playerSessionManager,
-            $queueManager,
-            $onlinePlayerRegistry
-        ));
-        $this->registerListener(new AutoJoinListener(
+        $this->registerCommand($this->createCommand(
+            $messages,
             $waitingWorld,
             $waitingWorldEntryService,
-            $messages->autoJoin()
+            $playerSessionManager,
+            $leaveDestination,
+            $worldLoader,
+            $queueManager
         ));
-        $this->registerListener(new WaitingWorldExitListener(
+        $this->registerRuntimeListeners(
             $waitingWorld,
-            $queueManager,
-            $playerSessionManager
-        ));
-
-        $this->plugin->getScheduler()->scheduleRepeatingTask(new QueueTickTask($queueManager), 20);
+            $messages,
+            $waitingWorldEntryService,
+            $playerSessionManager,
+            $onlinePlayerRegistry,
+            $queueManager
+        );
+        $this->scheduleQueueTickTask($queueManager);
     }
 
     private function saveResources(): void {
@@ -127,6 +116,89 @@ final class TNTRunBootstrap {
             $this->plugin->getDataFolder() . "tmp",
             new ArenaWorldArchiveExtractor()
         ))->installAll($arenaConfigs);
+    }
+
+    /**
+     * @param array<string, ArenaConfig> $arenaConfigs
+     */
+    private function createQueueManager(
+        array $arenaConfigs,
+        QueueSettings $queueSettings,
+        OnlinePlayerRegistry $onlinePlayerRegistry,
+        Messages $messages
+    ): QueueManager {
+        return new QueueManager(
+            $arenaConfigs,
+            new GameManager(),
+            $queueSettings,
+            new QueueBroadcaster($onlinePlayerRegistry, $messages->queue())
+        );
+    }
+
+    private function createWaitingWorldEntryService(
+        WaitingWorld $waitingWorld,
+        QueueManager $queueManager,
+        PlayerSessionManager $playerSessionManager,
+        WorldLoader $worldLoader
+    ): WaitingWorldEntryService {
+        return new WaitingWorldEntryService(
+            $waitingWorld,
+            $queueManager,
+            $playerSessionManager,
+            $worldLoader
+        );
+    }
+
+    private function createCommand(
+        Messages $messages,
+        WaitingWorld $waitingWorld,
+        WaitingWorldEntryService $waitingWorldEntryService,
+        PlayerSessionManager $playerSessionManager,
+        LeaveDestination $leaveDestination,
+        WorldLoader $worldLoader,
+        QueueManager $queueManager
+    ): TNTRunCommand {
+        return new TNTRunCommand(
+            $this->plugin,
+            $messages->command(),
+            new JoinSubcommand($messages->join(), $waitingWorld, $waitingWorldEntryService),
+            new LeaveSubcommand(
+                $messages->leave(),
+                $playerSessionManager,
+                $leaveDestination,
+                $worldLoader,
+                $queueManager
+            )
+        );
+    }
+
+    private function registerRuntimeListeners(
+        WaitingWorld $waitingWorld,
+        Messages $messages,
+        WaitingWorldEntryService $waitingWorldEntryService,
+        PlayerSessionManager $playerSessionManager,
+        OnlinePlayerRegistry $onlinePlayerRegistry,
+        QueueManager $queueManager
+    ): void {
+        $this->registerListener(new PlayerLifecycleListener(
+            $playerSessionManager,
+            $queueManager,
+            $onlinePlayerRegistry
+        ));
+        $this->registerListener(new AutoJoinListener(
+            $waitingWorld,
+            $waitingWorldEntryService,
+            $messages->autoJoin()
+        ));
+        $this->registerListener(new WaitingWorldExitListener(
+            $waitingWorld,
+            $queueManager,
+            $playerSessionManager
+        ));
+    }
+
+    private function scheduleQueueTickTask(QueueManager $queueManager): void {
+        $this->plugin->getScheduler()->scheduleRepeatingTask(new QueueTickTask($queueManager), 20);
     }
 
     private function registerCommand(TNTRunCommand $command): void {

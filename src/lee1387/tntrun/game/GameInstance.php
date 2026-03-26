@@ -7,7 +7,6 @@ namespace lee1387\tntrun\game;
 use lee1387\tntrun\game\queue\QueuePool;
 use lee1387\tntrun\game\queue\QueueSettings;
 use lee1387\tntrun\game\queue\QueueState;
-use lee1387\tntrun\player\PlayerSession;
 
 final class GameInstance {
     /**
@@ -28,24 +27,19 @@ final class GameInstance {
         return $this->id;
     }
 
-    public function getQueuePool(): QueuePool {
-        return $this->queueState->getQueuePool();
+    public function belongsToQueuePool(string $queuePoolId): bool {
+        return $this->queueState->belongsToQueuePool($queuePoolId);
+    }
+
+    public function getMaxPlayers(): int {
+        return $this->queueState->getMaxPlayers();
     }
 
     public function hasCompletedQueueCountdown(): bool {
         return $this->queueState->hasCompletedCountdown();
     }
 
-    public function hasPlayer(PlayerSession $playerSession): bool {
-        return isset($this->playerIds[$playerSession->getPlayerId()]);
-    }
-
-    public function addPlayer(PlayerSession $playerSession): bool {
-        $playerId = $playerSession->getPlayerId();
-        if ($playerSession->getGameInstanceId() !== null && $playerSession->getGameInstanceId() !== $this->id) {
-            return false;
-        }
-
+    public function addPlayerId(string $playerId): bool {
         if (isset($this->playerIds[$playerId])) {
             return false;
         }
@@ -55,30 +49,17 @@ final class GameInstance {
         }
 
         $this->playerIds[$playerId] = true;
-        $playerSession->assignGameInstance($this->id);
         $this->refreshQueueState();
 
         return true;
     }
 
-    public function canAcceptPlayer(PlayerSession $playerSession): bool {
-        if ($this->hasPlayer($playerSession)) {
-            return true;
-        }
-
-        return $this->canAcceptNewPlayers();
-    }
-
-    public function removePlayer(PlayerSession $playerSession): bool {
-        $playerId = $playerSession->getPlayerId();
+    public function removePlayerId(string $playerId): bool {
         if (!isset($this->playerIds[$playerId])) {
             return false;
         }
 
         unset($this->playerIds[$playerId]);
-        if ($playerSession->getGameInstanceId() === $this->id) {
-            $playerSession->clearGameInstance();
-        }
         $this->refreshQueueState();
 
         return true;
@@ -107,11 +88,11 @@ final class GameInstance {
         return \array_keys($this->playerIds);
     }
 
-    private function refreshQueueState(): void {
-        $this->queueState->refresh($this->getPlayerCount());
+    public function canAcceptNewPlayers(): bool {
+        return $this->queueState->isJoinable($this->getPlayerCount());
     }
 
-    private function canAcceptNewPlayers(): bool {
-        return $this->queueState->isJoinable($this->getPlayerCount());
+    private function refreshQueueState(): void {
+        $this->queueState->refresh($this->getPlayerCount());
     }
 }

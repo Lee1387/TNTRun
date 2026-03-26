@@ -53,6 +53,13 @@ final class QueuePool {
         return $this->id;
     }
 
+    /**
+     * @return array<string, ArenaConfig>
+     */
+    public function getArenaConfigs(): array {
+        return $this->arenaConfigs;
+    }
+
     public function getMinPlayers(): int {
         return $this->minPlayers;
     }
