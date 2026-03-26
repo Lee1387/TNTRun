@@ -5,5 +5,5 @@ version: 1.0.0
 
 permissions:
   tntrun.command.join:
-    description: Allows the user to join the configured TNTRun arena.
+    description: Allows the user to join the TNTRun lobby.
     default: true

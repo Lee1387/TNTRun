@@ -10,9 +10,7 @@ final class ArenaConfig {
     public function __construct(
         private string $name,
         private string $worldName,
-        private ArenaSpawn $waitingSpawn,
         private ArenaSpawn $spectatorSpawn,
-        private Cuboid $floorRegion,
         private int $eliminationY,
         private int $minPlayers,
         private int $maxPlayers,
@@ -25,14 +23,6 @@ final class ArenaConfig {
 
         if ($this->worldName === '') {
             throw new InvalidArgumentException("Arena world name cannot be empty.");
-        }
-
-        if (!$this->floorRegion->isSingleLayer()) {
-            throw new InvalidArgumentException("Arena floor region must be exactly one block layer tall.");
-        }
-
-        if ($this->eliminationY >= $this->getFloorY()) {
-            throw new InvalidArgumentException("Arena elimination Y must be below the floor region.");
         }
 
         if ($this->minPlayers < 2) {
@@ -60,20 +50,8 @@ final class ArenaConfig {
         return $this->worldName;
     }
 
-    public function getWaitingSpawn(): ArenaSpawn {
-        return $this->waitingSpawn;
-    }
-
     public function getSpectatorSpawn(): ArenaSpawn {
         return $this->spectatorSpawn;
-    }
-
-    public function getFloorRegion(): Cuboid {
-        return $this->floorRegion;
-    }
-
-    public function getFloorY(): int {
-        return $this->floorRegion->getMinY();
     }
 
     public function getEliminationY(): int {

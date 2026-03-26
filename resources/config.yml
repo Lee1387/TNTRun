@@ -1,31 +1,25 @@
 # TNTRun Configuration
 
-arena:
-  name: "default"
-  world: "world"
-  waiting-spawn:
-    x: 0.5
-    y: 80.0
-    z: 0.5
+lobby:
+  world: "tntrunlobby"
+  spawn:
+    x: 256.5
+    y: 66
+    z: 256.5
     yaw: 0.0
     pitch: 0.0
-  spectator-spawn:
-    x: 0.5
-    y: 85.0
-    z: 0.5
-    yaw: 0.0
-    pitch: 0.0
-  floor-region:
-    first:
-      x: -10
-      y: 64
-      z: -10
-    second:
-      x: 10
-      y: 64
-      z: 10
-  elimination-y: 58
-  min-players: 2
-  max-players: 8
-  countdown-seconds: 10
-  block-fall-delay-ticks: 8
+
+arenas:
+  default:
+    world: "tntrun_default"
+    spectator-spawn:
+      x: 0.5
+      y: 85.0
+      z: 0.5
+      yaw: 0.0
+      pitch: 0.0
+    elimination-y: 58
+    min-players: 2
+    max-players: 8
+    countdown-seconds: 10
+    block-fall-delay-ticks: 8

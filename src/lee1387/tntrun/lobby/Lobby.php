@@ -2,34 +2,27 @@
 
 declare(strict_types=1);
 
-namespace lee1387\tntrun\arena;
+namespace lee1387\tntrun\lobby;
 
+use lee1387\tntrun\arena\ArenaSpawn;
 use pocketmine\player\Player;
 
-final class Arena {
+final class Lobby {
     /**
      * @var array<string, true>
      */
     private array $joinedPlayerIds = [];
 
     public function __construct(
-        private ArenaConfig $config
+        private LobbyConfig $config
     ) {}
-
-    public function getConfig(): ArenaConfig {
-        return $this->config;
-    }
-
-    public function getName(): string {
-        return $this->config->getName();
-    }
 
     public function getWorldName(): string {
         return $this->config->getWorldName();
     }
 
-    public function getWaitingSpawn(): ArenaSpawn {
-        return $this->config->getWaitingSpawn();
+    public function getSpawn(): ArenaSpawn {
+        return $this->config->getSpawn();
     }
 
     public function isPlayerJoined(Player $player): bool {

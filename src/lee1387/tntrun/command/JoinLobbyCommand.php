@@ -12,13 +12,13 @@ use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginOwned;
 use pocketmine\utils\TextFormat;
 
-final class JoinArenaCommand extends Command implements PluginOwned {
+final class JoinLobbyCommand extends Command implements PluginOwned {
     public function __construct(
         private TNTRun $plugin
     ) {
         parent::__construct(
             "tntrun",
-            "Join the configured TNTRun arena.",
+            "Join the TNTRun lobby.",
             "/tntrun join"
         );
 
@@ -35,30 +35,29 @@ final class JoinArenaCommand extends Command implements PluginOwned {
             return;
         }
 
-        if (\count($args) !== 1 || strtolower($args[0]) !== "join") {
+        if (\count($args) !== 1 || \strtolower($args[0]) !== "join") {
             $sender->sendMessage(TextFormat::RED . "Usage: /tntrun join");
             return;
         }
 
-        $arena = $this->plugin->getArena();
-        if ($arena->isPlayerJoined($sender)) {
-            $sender->sendMessage(TextFormat::YELLOW . "You have already joined the TNTRun arena.");
+        $lobby = $this->plugin->getLobby();
+        if ($lobby->isPlayerJoined($sender)) {
+            $sender->sendMessage(TextFormat::YELLOW . "You are already in the TNTRun lobby.");
             return;
         }
 
-        $world = $this->plugin->getServer()->getWorldManager()->getWorldByName($arena->getWorldName());
+        $world = $this->plugin->getWorldLoader()->load($lobby->getWorldName());
         if ($world === null) {
-            $sender->sendMessage(TextFormat::RED . 'The arena world "' . $arena->getWorldName() . '" is not loaded.');
+            $sender->sendMessage(TextFormat::RED . 'The lobby world "' . $lobby->getWorldName() . '" could not be loaded.');
             return;
         }
 
-        if (!$sender->teleport($arena->getWaitingSpawn()->toLocation($world))) {
-            $sender->sendMessage(TextFormat::RED . "Failed to teleport you to the arena waiting spawn.");
+        if (!$sender->teleport($lobby->getSpawn()->toLocation($world))) {
+            $sender->sendMessage(TextFormat::RED . "Failed to teleport you to the TNTRun lobby.");
             return;
         }
 
-        $arena->joinPlayer($sender);
-        $sender->sendMessage(TextFormat::GREEN . 'You joined arena "' . $arena->getName() . '".');
+        $lobby->joinPlayer($sender);
     }
 
     public function getOwningPlugin(): Plugin {
