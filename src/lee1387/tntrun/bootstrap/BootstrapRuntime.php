@@ -8,7 +8,9 @@ use lee1387\tntrun\game\queue\QueueManager;
 use lee1387\tntrun\player\OnlinePlayerRegistry;
 use lee1387\tntrun\player\PlayerSessionManager;
 use lee1387\tntrun\player\TNTRunPlayerGuard;
+use lee1387\tntrun\waiting\leave\WaitingWorldLeaveService;
 use lee1387\tntrun\waiting\WaitingWorldEntryService;
+use lee1387\tntrun\waiting\WaitingWorldLoadout;
 use lee1387\tntrun\world\TNTRunWorldGuard;
 use lee1387\tntrun\world\WorldLoader;
 
@@ -20,6 +22,8 @@ final class BootstrapRuntime {
         public readonly TNTRunPlayerGuard $playerGuard,
         public readonly QueueManager $queueManager,
         public readonly WorldLoader $worldLoader,
-        public readonly WaitingWorldEntryService $waitingWorldEntryService
+        public readonly WaitingWorldEntryService $waitingWorldEntryService,
+        public readonly WaitingWorldLeaveService $waitingWorldLeaveService,
+        public readonly WaitingWorldLoadout $waitingWorldLoadout
     ) {}
 }

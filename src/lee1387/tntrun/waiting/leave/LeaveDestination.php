@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace lee1387\tntrun\waiting;
+namespace lee1387\tntrun\waiting\leave;
 
 use InvalidArgumentException;
 use lee1387\tntrun\arena\ArenaSpawn;

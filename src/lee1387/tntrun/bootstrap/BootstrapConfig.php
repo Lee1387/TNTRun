@@ -7,7 +7,7 @@ namespace lee1387\tntrun\bootstrap;
 use lee1387\tntrun\arena\ArenaConfig;
 use lee1387\tntrun\config\message\Messages;
 use lee1387\tntrun\game\queue\QueueSettings;
-use lee1387\tntrun\waiting\LeaveDestination;
+use lee1387\tntrun\waiting\leave\LeaveDestination;
 use lee1387\tntrun\waiting\WaitingWorld;
 
 final class BootstrapConfig {

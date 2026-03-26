@@ -5,19 +5,14 @@ declare(strict_types=1);
 namespace lee1387\tntrun\command\subcommand;
 
 use lee1387\tntrun\config\message\LeaveMessages;
-use lee1387\tntrun\game\queue\QueueManager;
-use lee1387\tntrun\player\PlayerSessionManager;
-use lee1387\tntrun\waiting\LeaveDestination;
-use lee1387\tntrun\world\WorldLoader;
+use lee1387\tntrun\waiting\leave\WaitingWorldLeaveResult;
+use lee1387\tntrun\waiting\leave\WaitingWorldLeaveService;
 use pocketmine\player\Player;
 
 final class LeaveSubcommand implements Subcommand {
     public function __construct(
         private LeaveMessages $messages,
-        private PlayerSessionManager $playerSessionManager,
-        private LeaveDestination $leaveDestination,
-        private WorldLoader $worldLoader,
-        private QueueManager $queueManager
+        private WaitingWorldLeaveService $waitingWorldLeaveService
     ) {}
 
     public function getName(): string {
@@ -30,18 +25,14 @@ final class LeaveSubcommand implements Subcommand {
             return;
         }
 
-        $playerSession = $this->playerSessionManager->get($player);
-        if ($playerSession === null || !$playerSession->isInWaitingWorld()) {
+        $result = $this->waitingWorldLeaveService->leave($player);
+        if ($result === WaitingWorldLeaveResult::NOT_IN_WAITING_WORLD) {
             $player->sendMessage($this->messages->notInWaitingWorld());
             return;
         }
 
-        if (!$this->leaveDestination->send($player, $this->worldLoader)) {
+        if ($result === WaitingWorldLeaveResult::DESTINATION_FAILED) {
             $player->sendMessage($this->messages->destinationFailed());
-            return;
         }
-
-        $this->queueManager->removePlayerSession($playerSession);
-        $playerSession->leaveWaitingWorld();
     }
 }

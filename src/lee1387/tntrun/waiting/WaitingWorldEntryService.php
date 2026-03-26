@@ -16,7 +16,8 @@ final class WaitingWorldEntryService {
         private QueueManager $queueManager,
         private PlayerSessionManager $playerSessionManager,
         private WorldLoader $worldLoader,
-        private TNTRunPlayerGuard $playerGuard
+        private TNTRunPlayerGuard $playerGuard,
+        private WaitingWorldLoadout $waitingWorldLoadout
     ) {}
 
     public function enter(Player $player): WaitingWorldEntryResult {
@@ -39,7 +40,8 @@ final class WaitingWorldEntryService {
             return WaitingWorldEntryResult::ALREADY_JOINED;
         }
 
-        $this->playerGuard->applyAdventureMode($player);
+        $this->playerGuard->prepare($player);
+        $this->waitingWorldLoadout->apply($player);
         $this->queueManager->assignPlayerSession($playerSession);
 
         return WaitingWorldEntryResult::SUCCESS;

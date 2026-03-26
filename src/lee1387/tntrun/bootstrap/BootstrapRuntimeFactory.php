@@ -11,7 +11,9 @@ use lee1387\tntrun\player\OnlinePlayerRegistry;
 use lee1387\tntrun\player\PlayerSessionManager;
 use lee1387\tntrun\player\TNTRunPlayerGuard;
 use lee1387\tntrun\TNTRun;
+use lee1387\tntrun\waiting\leave\WaitingWorldLeaveService;
 use lee1387\tntrun\waiting\WaitingWorldEntryService;
+use lee1387\tntrun\waiting\WaitingWorldLoadout;
 use lee1387\tntrun\world\TNTRunWorldGuard;
 use lee1387\tntrun\world\WorldLoader;
 
@@ -25,6 +27,7 @@ final class BootstrapRuntimeFactory {
         $playerSessionManager = new PlayerSessionManager();
         $worldGuard = new TNTRunWorldGuard([$config->waitingWorld->getWorldName()]);
         $playerGuard = new TNTRunPlayerGuard($playerSessionManager, $worldGuard);
+        $waitingWorldLoadout = new WaitingWorldLoadout();
         $queueManager = new QueueManager(
             $config->arenaConfigs,
             new GameManager(),
@@ -37,7 +40,16 @@ final class BootstrapRuntimeFactory {
             $queueManager,
             $playerSessionManager,
             $worldLoader,
-            $playerGuard
+            $playerGuard,
+            $waitingWorldLoadout
+        );
+        $waitingWorldLeaveService = new WaitingWorldLeaveService(
+            $playerSessionManager,
+            $config->leaveDestination,
+            $worldLoader,
+            $queueManager,
+            $playerGuard,
+            $waitingWorldLoadout
         );
 
         return new BootstrapRuntime(
@@ -47,7 +59,9 @@ final class BootstrapRuntimeFactory {
             $playerGuard,
             $queueManager,
             $worldLoader,
-            $waitingWorldEntryService
+            $waitingWorldEntryService,
+            $waitingWorldLeaveService,
+            $waitingWorldLoadout
         );
     }
 }

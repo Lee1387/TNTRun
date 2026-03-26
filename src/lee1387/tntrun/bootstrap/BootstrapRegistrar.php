@@ -11,6 +11,7 @@ use lee1387\tntrun\game\queue\task\QueueTickTask;
 use lee1387\tntrun\player\listener\PlayerLifecycleListener;
 use lee1387\tntrun\player\listener\TNTRunProtectionListener;
 use lee1387\tntrun\TNTRun;
+use lee1387\tntrun\waiting\leave\listener\LeaveItemListener;
 use lee1387\tntrun\waiting\listener\AutoJoinListener;
 use lee1387\tntrun\waiting\listener\WaitingWorldExitListener;
 use lee1387\tntrun\world\listener\TNTRunWorldProtectionListener;
@@ -32,17 +33,16 @@ final class BootstrapRegistrar {
             ),
             new LeaveSubcommand(
                 $config->messages->leave(),
-                $runtime->playerSessionManager,
-                $config->leaveDestination,
-                $runtime->worldLoader,
-                $runtime->queueManager
+                $runtime->waitingWorldLeaveService
             )
         ));
 
         $this->registerListener(new PlayerLifecycleListener(
             $runtime->playerSessionManager,
             $runtime->queueManager,
-            $runtime->onlinePlayerRegistry
+            $runtime->onlinePlayerRegistry,
+            $runtime->playerGuard,
+            $runtime->waitingWorldLoadout
         ));
         $this->registerListener(new TNTRunProtectionListener($runtime->playerGuard));
         $this->registerListener(new TNTRunWorldProtectionListener($runtime->worldGuard));
@@ -51,10 +51,17 @@ final class BootstrapRegistrar {
             $runtime->waitingWorldEntryService,
             $config->messages->autoJoin()
         ));
+        $this->registerListener(new LeaveItemListener(
+            $runtime->waitingWorldLoadout,
+            $runtime->waitingWorldLeaveService,
+            $config->messages->leave()
+        ));
         $this->registerListener(new WaitingWorldExitListener(
             $config->waitingWorld,
             $runtime->queueManager,
-            $runtime->playerSessionManager
+            $runtime->playerSessionManager,
+            $runtime->playerGuard,
+            $runtime->waitingWorldLoadout
         ));
 
         $this->plugin->getScheduler()->scheduleRepeatingTask(new QueueTickTask($runtime->queueManager), 20);

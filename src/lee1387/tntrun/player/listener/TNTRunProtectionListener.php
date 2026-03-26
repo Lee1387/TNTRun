@@ -14,6 +14,7 @@ use pocketmine\event\entity\EntityItemPickupEvent;
 use pocketmine\event\entity\EntityTrampleFarmlandEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
@@ -101,5 +102,14 @@ final class TNTRunProtectionListener implements Listener {
         if ($this->playerGuard->isProtected($event->getTransaction()->getSource())) {
             $event->cancel();
         }
+    }
+
+    public function onPlayerDeath(PlayerDeathEvent $event): void {
+        if (!$this->playerGuard->isProtected($event->getPlayer())) {
+            return;
+        }
+
+        $event->setDrops([]);
+        $event->setXpDropAmount(0);
     }
 }

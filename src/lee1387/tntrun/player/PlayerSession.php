@@ -49,6 +49,10 @@ final class PlayerSession {
         $this->managedWaitingWorldExit = true;
     }
 
+    public function clearManagedWaitingWorldExit(): void {
+        $this->managedWaitingWorldExit = false;
+    }
+
     public function consumeManagedWaitingWorldExit(): bool {
         if (!$this->managedWaitingWorldExit) {
             return false;
