@@ -62,6 +62,47 @@ spectator-spawn:
   z: 0.5
   yaw: 0.0
   pitch: 0.0
+player-spawns:
+  - x: 10.5
+    y: 64.0
+    z: 10.5
+    yaw: 0.0
+    pitch: 0.0
+  - x: 20.5
+    y: 64.0
+    z: 20.5
+    yaw: 0.0
+    pitch: 0.0
+  - x: 30.5
+    y: 64.0
+    z: 30.5
+    yaw: 0.0
+    pitch: 0.0
+  - x: 40.5
+    y: 64.0
+    z: 40.5
+    yaw: 0.0
+    pitch: 0.0
+  - x: 50.5
+    y: 64.0
+    z: 50.5
+    yaw: 0.0
+    pitch: 0.0
+  - x: 60.5
+    y: 64.0
+    z: 60.5
+    yaw: 0.0
+    pitch: 0.0
+  - x: 70.5
+    y: 64.0
+    z: 70.5
+    yaw: 0.0
+    pitch: 0.0
+  - x: 80.5
+    y: 64.0
+    z: 80.5
+    yaw: 0.0
+    pitch: 0.0
 elimination-y: 58
 min-players: 2
 max-players: 8
@@ -73,6 +114,7 @@ Notes:
 
 - the arena name comes from the folder name, so it does not need to be repeated in `arena.yml`
 - the world source name must match the arena folder name
+- `player-spawns` must contain at least `max-players` entries
 - the plugin currently validates arena packs at startup
 
 ## Building

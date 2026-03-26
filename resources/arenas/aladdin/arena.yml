@@ -4,8 +4,58 @@ spectator-spawn:
   z: 127.5
   yaw: 0.0
   pitch: 0.0
+
+player-spawns:
+  - x: 128.5
+    y: 111.0
+    z: 109.5
+    yaw: 0.0
+    pitch: 0.0
+
+  - x: 141.5
+    y: 111.0
+    z: 113.5
+    yaw: 0.0
+    pitch: 0.0
+
+  - x: 147.5
+    y: 111.0
+    z: 128.5
+    yaw: 0.0
+    pitch: 0.0
+
+  - x: 141.5
+    y: 111.0
+    z: 143.5
+    yaw: 0.0
+    pitch: 0.0
+
+  - x: 128.5
+    y: 111.0
+    z: 147.5
+    yaw: 0.0
+    pitch: 0.0
+
+  - x: 115.5
+    y: 111.0
+    z: 143.5
+    yaw: 0.0
+    pitch: 0.0
+
+  - x: 109.5
+    y: 111.0
+    z: 128.5
+    yaw: 0.0
+    pitch: 0.0
+
+  - x: 115.5
+    y: 111.0
+    z: 113.5
+    yaw: 0.0
+    pitch: 0.0
+
 elimination-y: 30
 min-players: 2
-max-players: 12
+max-players: 8
 countdown-seconds: 10
 block-fall-delay-ticks: 8

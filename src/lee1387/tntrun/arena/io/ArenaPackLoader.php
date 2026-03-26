@@ -115,6 +115,7 @@ final class ArenaPackLoader {
             $arenaName,
             $worldSource,
             $this->valueReader->loadSpawn($arenaData, "spectator-spawn", $arenaPath . ".spectator-spawn"),
+            $this->valueReader->loadSpawnList($arenaData, "player-spawns", $arenaPath . ".player-spawns"),
             $this->valueReader->requireInt($arenaData, "elimination-y", $arenaPath . ".elimination-y"),
             $this->valueReader->requireInt($arenaData, "min-players", $arenaPath . ".min-players"),
             $this->valueReader->requireInt($arenaData, "max-players", $arenaPath . ".max-players"),

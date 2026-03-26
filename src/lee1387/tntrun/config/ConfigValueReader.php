@@ -133,4 +133,35 @@ final class ConfigValueReader {
             $this->getOptionalNumeric($spawnData, "pitch", $path . ".pitch", 0.0)
         );
     }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return list<ArenaSpawn>
+     */
+    public function loadSpawnList(array $data, string $key, string $path): array {
+        if (!\array_key_exists($key, $data)) {
+            throw new InvalidArgumentException(\sprintf('Missing config key "%s".', $path));
+        }
+
+        if (!\is_array($data[$key]) || !\array_is_list($data[$key])) {
+            throw new InvalidArgumentException(\sprintf('Config key "%s" must be a list of spawns.', $path));
+        }
+
+        $spawns = [];
+
+        foreach ($data[$key] as $index => $spawnData) {
+            $spawnPath = "$path.$index";
+            $spawnMap = $this->requireArray($spawnData, $spawnPath);
+
+            $spawns[] = new ArenaSpawn(
+                $this->requireNumeric($spawnMap, "x", $spawnPath . ".x"),
+                $this->requireNumeric($spawnMap, "y", $spawnPath . ".y"),
+                $this->requireNumeric($spawnMap, "z", $spawnPath . ".z"),
+                $this->getOptionalNumeric($spawnMap, "yaw", $spawnPath . ".yaw", 0.0),
+                $this->getOptionalNumeric($spawnMap, "pitch", $spawnPath . ".pitch", 0.0)
+            );
+        }
+
+        return $spawns;
+    }
 }
