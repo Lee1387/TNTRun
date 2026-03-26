@@ -2,3 +2,8 @@ name: TNTRun
 main: lee1387\tntrun\TNTRun
 api: 5.0.0
 version: 1.0.0
+
+permissions:
+  tntrun.command.join:
+    description: Allows the user to join the configured TNTRun arena.
+    default: true

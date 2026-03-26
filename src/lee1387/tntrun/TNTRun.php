@@ -6,6 +6,7 @@ namespace lee1387\tntrun;
 
 use lee1387\tntrun\arena\Arena;
 use lee1387\tntrun\arena\ArenaConfigLoader;
+use lee1387\tntrun\command\JoinArenaCommand;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 use RuntimeException;
@@ -32,6 +33,7 @@ final class TNTRun extends PluginBase {
         }
 
         $this->arena = new Arena($arenaConfig);
+        $this->getServer()->getCommandMap()->register($this->getDescription()->getName(), new JoinArenaCommand($this));
 
         $this->getLogger()->info(\sprintf(
             'Loaded arena "%s" in world "%s".',

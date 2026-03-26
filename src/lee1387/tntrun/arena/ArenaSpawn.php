@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace lee1387\tntrun\arena;
 
 use InvalidArgumentException;
+use pocketmine\entity\Location;
+use pocketmine\world\World;
 
 final class ArenaSpawn {
     public function __construct(
@@ -45,5 +47,16 @@ final class ArenaSpawn {
 
     public function getPitch(): float {
         return $this->pitch;
+    }
+
+    public function toLocation(World $world): Location {
+        return new Location(
+            $this->x,
+            $this->y,
+            $this->z,
+            $world,
+            $this->yaw,
+            $this->pitch
+        );
     }
 }
