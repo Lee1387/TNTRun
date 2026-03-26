@@ -7,12 +7,14 @@ namespace lee1387\tntrun\bootstrap;
 use lee1387\tntrun\game\GameManager;
 use lee1387\tntrun\game\queue\QueueBroadcaster;
 use lee1387\tntrun\game\queue\QueueManager;
+use lee1387\tntrun\game\vote\VoteBroadcaster;
 use lee1387\tntrun\player\OnlinePlayerRegistry;
 use lee1387\tntrun\player\PlayerSessionManager;
 use lee1387\tntrun\player\TNTRunPlayerGuard;
 use lee1387\tntrun\TNTRun;
 use lee1387\tntrun\waiting\leave\WaitingWorldLeaveService;
 use lee1387\tntrun\waiting\WaitingWorldEntryService;
+use lee1387\tntrun\waiting\WaitingWorldExitCoordinator;
 use lee1387\tntrun\waiting\WaitingWorldLoadout;
 use lee1387\tntrun\world\TNTRunWorldGuard;
 use lee1387\tntrun\world\WorldLoader;
@@ -27,12 +29,19 @@ final class BootstrapRuntimeFactory {
         $playerSessionManager = new PlayerSessionManager();
         $worldGuard = new TNTRunWorldGuard([$config->waitingWorld->getWorldName()]);
         $playerGuard = new TNTRunPlayerGuard($playerSessionManager, $worldGuard);
-        $waitingWorldLoadout = new WaitingWorldLoadout();
+        $waitingWorldLoadout = new WaitingWorldLoadout($config->messages->leave(), $config->messages->vote());
+        $gameManager = new GameManager();
         $queueManager = new QueueManager(
             $config->arenaConfigs,
-            new GameManager(),
+            $gameManager,
             $config->queueSettings,
-            new QueueBroadcaster($onlinePlayerRegistry, $config->messages->queue())
+            new QueueBroadcaster($onlinePlayerRegistry, $config->messages->queue()),
+            new VoteBroadcaster($onlinePlayerRegistry, $config->messages->vote())
+        );
+        $waitingWorldExitCoordinator = new WaitingWorldExitCoordinator(
+            $queueManager,
+            $playerGuard,
+            $waitingWorldLoadout
         );
         $worldLoader = new WorldLoader($this->plugin->getServer()->getWorldManager());
         $waitingWorldEntryService = new WaitingWorldEntryService(
@@ -47,9 +56,7 @@ final class BootstrapRuntimeFactory {
             $playerSessionManager,
             $config->leaveDestination,
             $worldLoader,
-            $queueManager,
-            $playerGuard,
-            $waitingWorldLoadout
+            $waitingWorldExitCoordinator
         );
 
         return new BootstrapRuntime(
@@ -57,8 +64,10 @@ final class BootstrapRuntimeFactory {
             $playerSessionManager,
             $worldGuard,
             $playerGuard,
+            $gameManager,
             $queueManager,
             $worldLoader,
+            $waitingWorldExitCoordinator,
             $waitingWorldEntryService,
             $waitingWorldLeaveService,
             $waitingWorldLoadout

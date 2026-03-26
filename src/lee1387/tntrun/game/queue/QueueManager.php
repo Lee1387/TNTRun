@@ -7,6 +7,7 @@ namespace lee1387\tntrun\game\queue;
 use lee1387\tntrun\arena\ArenaConfig;
 use lee1387\tntrun\game\GameInstance;
 use lee1387\tntrun\game\GameManager;
+use lee1387\tntrun\game\vote\VoteBroadcaster;
 use lee1387\tntrun\player\PlayerSession;
 
 final class QueueManager {
@@ -24,7 +25,8 @@ final class QueueManager {
         array $arenaConfigs,
         private GameManager $gameManager,
         private QueueSettings $queueSettings,
-        private QueueBroadcaster $queueBroadcaster
+        private QueueBroadcaster $queueBroadcaster,
+        private VoteBroadcaster $voteBroadcaster
     ) {
         \ksort($arenaConfigs);
         $this->queuePools = (new QueuePoolFactory())->build($arenaConfigs);
@@ -79,6 +81,16 @@ final class QueueManager {
             }
 
             $countdownSecondsRemaining = $gameInstance->getQueueCountdownSecondsRemaining();
+            if (
+                $countdownSecondsRemaining !== null
+                && $countdownSecondsRemaining <= 5
+                && $gameInstance->isVotingOpen()
+            ) {
+                $voteResult = $gameInstance->closeVoting();
+                $gameInstance->lockQueue();
+                $this->voteBroadcaster->broadcastSelection($gameInstance, $voteResult);
+            }
+
             if ($countdownSecondsRemaining !== null) {
                 $this->queueBroadcaster->sendCountdown($gameInstance, $countdownSecondsRemaining);
             }

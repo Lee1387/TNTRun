@@ -58,6 +58,14 @@ final class ArenaConfig {
         return $this->name;
     }
 
+    public function getDisplayName(): string {
+        $displayName = \str_replace(["_", "-"], " ", $this->name);
+        $displayName = (string) \preg_replace('/(?<=[a-z])(?=[A-Z])/', ' ', $displayName);
+        $displayName = \trim((string) \preg_replace('/\s+/', ' ', $displayName));
+
+        return \ucwords(\strtolower($displayName));
+    }
+
     public function getWorldSource(): ArenaWorldSource {
         return $this->worldSource;
     }

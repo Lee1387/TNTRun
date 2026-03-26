@@ -9,8 +9,11 @@ use lee1387\tntrun\waiting\WaitingWorld;
 use lee1387\tntrun\waiting\WaitingWorldEntryResult;
 use lee1387\tntrun\waiting\WaitingWorldEntryService;
 use pocketmine\player\Player;
+use pocketmine\utils\TextFormat;
 
 final class JoinSubcommand implements Subcommand {
+    private const USAGE_MESSAGE = TextFormat::RED . "Usage: /tntrun join";
+
     public function __construct(
         private JoinMessages $messages,
         private WaitingWorld $waitingWorld,
@@ -23,7 +26,7 @@ final class JoinSubcommand implements Subcommand {
 
     public function execute(Player $player, array $args): void {
         if ($args !== []) {
-            $player->sendMessage($this->messages->usage());
+            $player->sendMessage(self::USAGE_MESSAGE);
             return;
         }
 

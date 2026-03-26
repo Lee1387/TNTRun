@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun\waiting\leave;
 
-use lee1387\tntrun\game\queue\QueueManager;
 use lee1387\tntrun\player\PlayerSessionManager;
-use lee1387\tntrun\player\TNTRunPlayerGuard;
-use lee1387\tntrun\waiting\WaitingWorldLoadout;
+use lee1387\tntrun\waiting\WaitingWorldExitCoordinator;
 use lee1387\tntrun\world\WorldLoader;
 use pocketmine\player\Player;
 
@@ -16,9 +14,7 @@ final class WaitingWorldLeaveService {
         private PlayerSessionManager $playerSessionManager,
         private LeaveDestination $leaveDestination,
         private WorldLoader $worldLoader,
-        private QueueManager $queueManager,
-        private TNTRunPlayerGuard $playerGuard,
-        private WaitingWorldLoadout $waitingWorldLoadout
+        private WaitingWorldExitCoordinator $waitingWorldExitCoordinator
     ) {}
 
     public function leave(Player $player): WaitingWorldLeaveResult {
@@ -27,16 +23,13 @@ final class WaitingWorldLeaveService {
             return WaitingWorldLeaveResult::NOT_IN_WAITING_WORLD;
         }
 
-        $playerSession->markManagedWaitingWorldExit();
+        $this->waitingWorldExitCoordinator->markManagedExit($playerSession);
         if (!$this->leaveDestination->send($player, $this->worldLoader)) {
-            $playerSession->clearManagedWaitingWorldExit();
+            $this->waitingWorldExitCoordinator->clearManagedExit($playerSession);
             return WaitingWorldLeaveResult::DESTINATION_FAILED;
         }
 
-        $this->queueManager->removePlayerSession($playerSession);
-        $playerSession->leaveWaitingWorld();
-        $this->playerGuard->cleanup($player);
-        $this->waitingWorldLoadout->clear($player);
+        $this->waitingWorldExitCoordinator->handleExit($player, $playerSession);
 
         return WaitingWorldLeaveResult::SUCCESS;
     }

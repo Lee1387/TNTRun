@@ -7,6 +7,8 @@ namespace lee1387\tntrun\game\queue;
 use lee1387\tntrun\game\GameInstance;
 
 final class QueueAssigner {
+    private int $nextQueuePoolRotation = 0;
+
     /**
      * @param array<string, GameInstance> $gameInstances
      */
@@ -36,7 +38,7 @@ final class QueueAssigner {
      * @param array<string, GameInstance> $gameInstances
      */
     public function determineQueuePoolForNewGameInstance(array $queuePools, array $gameInstances): ?QueuePool {
-        $selectedQueuePool = null;
+        $candidateQueuePools = [];
         $selectedTotalPlayerCount = null;
         $selectedGameInstanceCount = null;
 
@@ -54,20 +56,36 @@ final class QueueAssigner {
             }
 
             if (
-                $selectedQueuePool !== null
+                $selectedTotalPlayerCount !== null
                 && (
                     $totalPlayerCount > $selectedTotalPlayerCount
-                    || ($totalPlayerCount === $selectedTotalPlayerCount && $gameInstanceCount >= $selectedGameInstanceCount)
+                    || ($totalPlayerCount === $selectedTotalPlayerCount && $gameInstanceCount > $selectedGameInstanceCount)
                 )
             ) {
                 continue;
             }
 
-            $selectedQueuePool = $queuePool;
-            $selectedTotalPlayerCount = $totalPlayerCount;
-            $selectedGameInstanceCount = $gameInstanceCount;
+            if (
+                $selectedTotalPlayerCount === null
+                || $totalPlayerCount < $selectedTotalPlayerCount
+                || ($totalPlayerCount === $selectedTotalPlayerCount && $gameInstanceCount < $selectedGameInstanceCount)
+            ) {
+                $candidateQueuePools = [$queuePool];
+                $selectedTotalPlayerCount = $totalPlayerCount;
+                $selectedGameInstanceCount = $gameInstanceCount;
+                continue;
+            }
+
+            $candidateQueuePools[] = $queuePool;
         }
 
-        return $selectedQueuePool;
+        if ($candidateQueuePools === []) {
+            return null;
+        }
+
+        $selectedIndex = $this->nextQueuePoolRotation % \count($candidateQueuePools);
+        ++$this->nextQueuePoolRotation;
+
+        return $candidateQueuePools[$selectedIndex];
     }
 }

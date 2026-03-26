@@ -10,9 +10,9 @@ waiting-world:
   full-countdown-seconds: 10
   world: "tntrun_waiting"
   spawn:
-    x: 256.5
-    y: 66
-    z: 256.5
+    x: 2435.5
+    y: 44
+    z: 2431.5
     yaw: 0.0
     pitch: 0.0
 

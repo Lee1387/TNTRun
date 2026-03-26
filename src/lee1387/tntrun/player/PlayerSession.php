@@ -6,7 +6,6 @@ namespace lee1387\tntrun\player;
 
 final class PlayerSession {
     private bool $inWaitingWorld = false;
-    private bool $managedWaitingWorldExit = false;
 
     public function __construct(
         private string $playerId
@@ -40,25 +39,6 @@ final class PlayerSession {
         }
 
         $this->inWaitingWorld = false;
-        $this->managedWaitingWorldExit = false;
-
-        return true;
-    }
-
-    public function markManagedWaitingWorldExit(): void {
-        $this->managedWaitingWorldExit = true;
-    }
-
-    public function clearManagedWaitingWorldExit(): void {
-        $this->managedWaitingWorldExit = false;
-    }
-
-    public function consumeManagedWaitingWorldExit(): bool {
-        if (!$this->managedWaitingWorldExit) {
-            return false;
-        }
-
-        $this->managedWaitingWorldExit = false;
 
         return true;
     }

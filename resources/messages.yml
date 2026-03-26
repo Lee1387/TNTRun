@@ -1,28 +1,26 @@
-command:
-  usage: "&cUsage: /tntrun <join|leave>"
-  player-only: "&cThis command can only be used in-game."
-
 join:
-  usage: "&cUsage: /tntrun join"
   already-joined: "&eYou are already in the TNTRun waiting world."
   world-not-available: "&cThe TNTRun waiting world \"{world}\" could not be loaded."
   teleport-failed: "&cFailed to teleport you to the TNTRun waiting world."
+  auto-join-world-not-available: "&cThe TNTRun waiting world \"{world}\" could not be loaded. Please try again later."
+  auto-join-teleport-failed: "&cFailed to send you to the TNTRun waiting world. Please try again later."
 
 leave:
-  usage: "&cUsage: /tntrun leave"
+  item-name: "&cLeave Game"
   not-in-waiting-world: "&eYou are not in the TNTRun waiting world."
   destination-failed: "&cFailed to send you to the configured leave destination."
-
-auto-join:
-  world-not-available: "&cThe TNTRun waiting world \"{world}\" could not be loaded. Please try again later."
-  teleport-failed: "&cFailed to send you to the TNTRun waiting world. Please try again later."
 
 queue:
   join-broadcast: "&b{player} joined the game &7(&f{current}&7/&f{max} &7players)"
   leave-broadcast: "&c{player} left the game &7(&f{current}&7/&f{max} &7players)"
-  countdown-tip: "&bGame starts in &f{seconds}"
-  countdown-title: "&b{seconds}"
-  countdown-title-overrides:
-    "3": "&e{seconds}"
-    "2": "&6{seconds}"
-    "1": "&c{seconds}"
+
+vote:
+  item-name: "&aVote Arena"
+  form-title: "&bVote Arena"
+  form-content: "&7Choose the arena you want to play.\n&7Current vote: &f{current-vote}"
+  form-current-vote-none: "None"
+  form-selected-suffix: "&aSelected"
+  selected-broadcast: "&a{arena} has been selected with &f{votes} &avotes."
+  no-game: "&eYou are not currently in a votable game."
+  closed: "&eVoting is now closed for this game."
+  submitted: "&aYou voted for &f{arena}&a."

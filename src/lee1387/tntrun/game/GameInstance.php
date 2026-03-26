@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun\game;
 
+use lee1387\tntrun\arena\ArenaConfig;
 use lee1387\tntrun\game\queue\QueuePool;
 use lee1387\tntrun\game\queue\QueueSettings;
 use lee1387\tntrun\game\queue\QueueState;
+use lee1387\tntrun\game\vote\VoteResult;
+use lee1387\tntrun\game\vote\VoteState;
 
 final class GameInstance {
     /**
@@ -14,6 +17,7 @@ final class GameInstance {
      */
     private array $playerIds = [];
     private QueueState $queueState;
+    private VoteState $voteState;
 
     public function __construct(
         private string $id,
@@ -21,6 +25,7 @@ final class GameInstance {
         QueueSettings $queueSettings
     ) {
         $this->queueState = new QueueState($queuePool, $queueSettings);
+        $this->voteState = new VoteState($queuePool);
     }
 
     public function getId(): string {
@@ -37,6 +42,10 @@ final class GameInstance {
 
     public function hasCompletedQueueCountdown(): bool {
         return $this->queueState->hasCompletedCountdown();
+    }
+
+    public function hasPlayerId(string $playerId): bool {
+        return isset($this->playerIds[$playerId]);
     }
 
     public function addPlayerId(string $playerId): bool {
@@ -60,6 +69,7 @@ final class GameInstance {
         }
 
         unset($this->playerIds[$playerId]);
+        $this->voteState->removeVote($playerId);
         $this->refreshQueueState();
 
         return true;
@@ -82,6 +92,41 @@ final class GameInstance {
     }
 
     /**
+     * @return array<string, ArenaConfig>
+     */
+    public function getVotableArenaConfigs(): array {
+        return $this->voteState->getVotableArenaConfigs();
+    }
+
+    public function getPlayerVoteArenaName(string $playerId): ?string {
+        return $this->voteState->getPlayerVoteArenaName($playerId);
+    }
+
+    public function isVotingOpen(): bool {
+        return $this->voteState->isVotingOpen();
+    }
+
+    public function submitVote(string $playerId, string $arenaName): bool {
+        if (!$this->hasPlayerId($playerId)) {
+            return false;
+        }
+
+        return $this->voteState->submitVote($playerId, $arenaName);
+    }
+
+    public function closeVoting(): VoteResult {
+        return $this->voteState->close();
+    }
+
+    public function getSelectedArenaConfig(): ?ArenaConfig {
+        return $this->voteState->getSelectedArenaConfig();
+    }
+
+    public function lockQueue(): void {
+        $this->queueState->lock();
+    }
+
+    /**
      * @return list<string>
      */
     public function getPlayerIds(): array {
@@ -93,6 +138,15 @@ final class GameInstance {
     }
 
     private function refreshQueueState(): void {
+        $hadCountdown = $this->queueState->getCountdownSecondsRemaining() !== null;
+
         $this->queueState->refresh($this->getPlayerCount());
+        if (
+            $hadCountdown
+            && $this->queueState->getCountdownSecondsRemaining() === null
+            && !$this->queueState->hasCompletedCountdown()
+        ) {
+            $this->voteState->reopen();
+        }
     }
 }

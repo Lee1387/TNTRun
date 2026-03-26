@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun\player\listener;
 
-use lee1387\tntrun\game\queue\QueueManager;
 use lee1387\tntrun\player\OnlinePlayerRegistry;
 use lee1387\tntrun\player\PlayerSessionManager;
-use lee1387\tntrun\player\TNTRunPlayerGuard;
-use lee1387\tntrun\waiting\WaitingWorldLoadout;
+use lee1387\tntrun\waiting\WaitingWorldExitCoordinator;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerKickEvent;
@@ -18,10 +16,8 @@ use pocketmine\player\Player;
 final class PlayerLifecycleListener implements Listener {
     public function __construct(
         private PlayerSessionManager $playerSessionManager,
-        private QueueManager $queueManager,
         private OnlinePlayerRegistry $onlinePlayerRegistry,
-        private TNTRunPlayerGuard $playerGuard,
-        private WaitingWorldLoadout $waitingWorldLoadout
+        private WaitingWorldExitCoordinator $waitingWorldExitCoordinator
     ) {}
 
     /**
@@ -49,13 +45,10 @@ final class PlayerLifecycleListener implements Listener {
     private function cleanup(Player $player): void {
         $playerSession = $this->playerSessionManager->get($player);
         if ($playerSession !== null) {
-            $this->queueManager->removePlayerSession($playerSession);
-            $playerSession->leaveWaitingWorld();
+            $this->waitingWorldExitCoordinator->handleExit($player, $playerSession);
             $this->playerSessionManager->remove($player);
         }
 
-        $this->playerGuard->cleanup($player);
-        $this->waitingWorldLoadout->clear($player);
         $this->onlinePlayerRegistry->untrack($player);
     }
 }

@@ -8,6 +8,7 @@ use lee1387\tntrun\config\message\QueueMessages;
 use lee1387\tntrun\game\GameInstance;
 use lee1387\tntrun\player\OnlinePlayerRegistry;
 use lee1387\tntrun\player\PlayerSession;
+use pocketmine\utils\TextFormat;
 
 final class QueueBroadcaster {
     public function __construct(
@@ -44,9 +45,9 @@ final class QueueBroadcaster {
                 continue;
             }
 
-            $player->sendTip($this->messages->countdownTip($countdownSecondsRemaining));
+            $player->sendTip($this->createCountdownTip($countdownSecondsRemaining));
 
-            $title = $this->messages->countdownTitle($countdownSecondsRemaining);
+            $title = $this->createCountdownTitle($countdownSecondsRemaining);
             if ($title === null || $title === "") {
                 continue;
             }
@@ -70,5 +71,34 @@ final class QueueBroadcaster {
         $player = $this->onlinePlayerRegistry->getById($playerSession->getPlayerId());
 
         return $player?->getName() ?? $playerSession->getPlayerId();
+    }
+
+    private function createCountdownTip(int $seconds): string {
+        return TextFormat::AQUA . "Game starts in " . $this->formatCountdownSeconds($seconds);
+    }
+
+    private function createCountdownTitle(int $seconds): ?string {
+        return match ($seconds) {
+            1 => TextFormat::RED . "1",
+            2 => TextFormat::GOLD . "2",
+            3 => TextFormat::YELLOW . "3",
+            4 => TextFormat::AQUA . "4",
+            5 => TextFormat::AQUA . "5",
+            6 => TextFormat::AQUA . "6",
+            7 => TextFormat::AQUA . "7",
+            8 => TextFormat::AQUA . "8",
+            9 => TextFormat::AQUA . "9",
+            10 => TextFormat::AQUA . "10",
+            default => null,
+        };
+    }
+
+    private function formatCountdownSeconds(int $seconds): string {
+        return match ($seconds) {
+            1 => TextFormat::RED . "1",
+            2 => TextFormat::GOLD . "2",
+            3 => TextFormat::YELLOW . "3",
+            default => TextFormat::WHITE . (string) $seconds,
+        };
     }
 }

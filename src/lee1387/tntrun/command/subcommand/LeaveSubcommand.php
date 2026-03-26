@@ -8,8 +8,11 @@ use lee1387\tntrun\config\message\LeaveMessages;
 use lee1387\tntrun\waiting\leave\WaitingWorldLeaveResult;
 use lee1387\tntrun\waiting\leave\WaitingWorldLeaveService;
 use pocketmine\player\Player;
+use pocketmine\utils\TextFormat;
 
 final class LeaveSubcommand implements Subcommand {
+    private const USAGE_MESSAGE = TextFormat::RED . "Usage: /tntrun leave";
+
     public function __construct(
         private LeaveMessages $messages,
         private WaitingWorldLeaveService $waitingWorldLeaveService
@@ -21,7 +24,7 @@ final class LeaveSubcommand implements Subcommand {
 
     public function execute(Player $player, array $args): void {
         if ($args !== []) {
-            $player->sendMessage($this->messages->usage());
+            $player->sendMessage(self::USAGE_MESSAGE);
             return;
         }
 

@@ -10,9 +10,12 @@ use pocketmine\block\Liquid;
 use pocketmine\block\utils\Fallable;
 use pocketmine\entity\object\FallingBlock;
 use pocketmine\event\block\BlockBurnEvent;
+use pocketmine\event\block\BlockFormEvent;
+use pocketmine\event\block\BlockGrowEvent;
 use pocketmine\event\block\BlockPreExplodeEvent;
 use pocketmine\event\block\BlockSpreadEvent;
 use pocketmine\event\block\BlockUpdateEvent;
+use pocketmine\event\block\FarmlandHydrationChangeEvent;
 use pocketmine\event\block\LeavesDecayEvent;
 use pocketmine\event\entity\EntityBlockChangeEvent;
 use pocketmine\event\entity\EntityPreExplodeEvent;
@@ -34,14 +37,23 @@ final class TNTRunWorldProtectionListener implements Listener {
             return;
         }
 
-        $source = $event->getSource();
-        $newState = $event->getNewState();
-        if (
-            $source instanceof Liquid
-            || $source instanceof BaseFire
-            || $newState instanceof Liquid
-            || $newState instanceof BaseFire
-        ) {
+        $event->cancel();
+    }
+
+    public function onBlockGrow(BlockGrowEvent $event): void {
+        if ($this->worldGuard->isProtectedBlock($event->getBlock())) {
+            $event->cancel();
+        }
+    }
+
+    public function onBlockForm(BlockFormEvent $event): void {
+        if ($this->worldGuard->isProtectedBlock($event->getBlock())) {
+            $event->cancel();
+        }
+    }
+
+    public function onFarmlandHydrationChange(FarmlandHydrationChangeEvent $event): void {
+        if ($this->worldGuard->isProtectedBlock($event->getBlock())) {
             $event->cancel();
         }
     }

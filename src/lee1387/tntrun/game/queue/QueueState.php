@@ -44,8 +44,23 @@ final class QueueState {
         ) && !$this->isFull($playerCount);
     }
 
+    public function lock(): void {
+        if ($this->queuePhase !== QueuePhase::READY || $this->countdownSecondsRemaining === null) {
+            return;
+        }
+
+        $this->queuePhase = QueuePhase::PREPARING;
+    }
+
     public function tickCountdown(): bool {
-        if ($this->queuePhase !== QueuePhase::READY || $this->countdownSecondsRemaining === null || $this->countdownSecondsRemaining === 0) {
+        if (
+            (
+                $this->queuePhase !== QueuePhase::READY
+                && $this->queuePhase !== QueuePhase::PREPARING
+            )
+            || $this->countdownSecondsRemaining === null
+            || $this->countdownSecondsRemaining === 0
+        ) {
             return false;
         }
 
@@ -66,6 +81,10 @@ final class QueueState {
             $this->queuePhase = QueuePhase::WAITING;
             $this->countdownSecondsRemaining = null;
 
+            return;
+        }
+
+        if ($this->queuePhase === QueuePhase::PREPARING) {
             return;
         }
 

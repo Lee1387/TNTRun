@@ -134,13 +134,7 @@ final class ConfigValueReader {
     public function loadSpawn(array $data, string $key, string $path): ArenaSpawn {
         $spawnData = $this->requireMapKey($data, $key, $path);
 
-        return new ArenaSpawn(
-            $this->requireNumeric($spawnData, "x", $path . ".x"),
-            $this->requireNumeric($spawnData, "y", $path . ".y"),
-            $this->requireNumeric($spawnData, "z", $path . ".z"),
-            $this->getOptionalNumeric($spawnData, "yaw", $path . ".yaw", 0.0),
-            $this->getOptionalNumeric($spawnData, "pitch", $path . ".pitch", 0.0)
-        );
+        return $this->createSpawn($spawnData, $path);
     }
 
     /**
@@ -162,15 +156,22 @@ final class ConfigValueReader {
             $spawnPath = "$path.$index";
             $spawnMap = $this->requireMap($spawnData, $spawnPath);
 
-            $spawns[] = new ArenaSpawn(
-                $this->requireNumeric($spawnMap, "x", $spawnPath . ".x"),
-                $this->requireNumeric($spawnMap, "y", $spawnPath . ".y"),
-                $this->requireNumeric($spawnMap, "z", $spawnPath . ".z"),
-                $this->getOptionalNumeric($spawnMap, "yaw", $spawnPath . ".yaw", 0.0),
-                $this->getOptionalNumeric($spawnMap, "pitch", $spawnPath . ".pitch", 0.0)
-            );
+            $spawns[] = $this->createSpawn($spawnMap, $spawnPath);
         }
 
         return $spawns;
+    }
+
+    /**
+     * @param array<string, mixed> $spawnData
+     */
+    private function createSpawn(array $spawnData, string $path): ArenaSpawn {
+        return new ArenaSpawn(
+            $this->requireNumeric($spawnData, "x", $path . ".x"),
+            $this->requireNumeric($spawnData, "y", $path . ".y"),
+            $this->requireNumeric($spawnData, "z", $path . ".z"),
+            $this->getOptionalNumeric($spawnData, "yaw", $path . ".yaw", 0.0),
+            $this->getOptionalNumeric($spawnData, "pitch", $path . ".pitch", 0.0)
+        );
     }
 }

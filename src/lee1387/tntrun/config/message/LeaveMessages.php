@@ -7,13 +7,13 @@ namespace lee1387\tntrun\config\message;
 final class LeaveMessages {
     public function __construct(
         private MessageFormatter $formatter,
-        private string $usage,
+        private string $itemName,
         private string $notInWaitingWorld,
         private string $destinationFailed
     ) {}
 
-    public function usage(): string {
-        return $this->formatter->format($this->usage);
+    public function itemName(): string {
+        return $this->formatter->format($this->itemName);
     }
 
     public function notInWaitingWorld(): string {
