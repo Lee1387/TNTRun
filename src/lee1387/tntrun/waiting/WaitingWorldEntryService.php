@@ -39,7 +39,7 @@ final class WaitingWorldEntryService {
         }
 
         if ($currentGameInstance !== null) {
-            $this->queueManager->removePlayerSession($playerSession);
+            $this->queueManager->removePlayerSessionSilently($playerSession);
         }
 
         if (!$playerSession->joinWaitingWorld()) {

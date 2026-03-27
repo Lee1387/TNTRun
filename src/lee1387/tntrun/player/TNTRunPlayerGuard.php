@@ -19,12 +19,13 @@ final class TNTRunPlayerGuard {
 
     public function isProtected(Human $player): bool {
         return $player instanceof Player && (
-            ($this->playerSessionManager->get($player)?->isInTNTRun() ?? false)
+            ($this->playerSessionManager->get($player)?->isInWaitingWorld() ?? false)
             || $this->worldGuard->isProtectedWorld($player->getWorld())
         );
     }
 
     public function prepare(Player $player): void {
+        $player->setNoClientPredictions(false);
         $player->getEffects()->clear();
         $player->getInventory()->clearAll();
         $player->getArmorInventory()->clearAll();
@@ -48,7 +49,16 @@ final class TNTRunPlayerGuard {
     }
 
     public function cleanup(Player $player): void {
+        $player->setNoClientPredictions(false);
         $player->getEffects()->remove(VanillaEffects::NIGHT_VISION());
+    }
+
+    public function freeze(Player $player): void {
+        $player->setNoClientPredictions();
+    }
+
+    public function unfreeze(Player $player): void {
+        $player->setNoClientPredictions(false);
     }
 
     private function applyNightVision(Player $player): void {

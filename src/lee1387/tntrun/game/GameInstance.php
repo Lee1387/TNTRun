@@ -8,6 +8,7 @@ use lee1387\tntrun\arena\ArenaConfig;
 use lee1387\tntrun\game\queue\QueuePool;
 use lee1387\tntrun\game\queue\QueueSettings;
 use lee1387\tntrun\game\queue\QueueState;
+use lee1387\tntrun\game\start\ArenaStartState;
 use lee1387\tntrun\game\vote\VoteResult;
 use lee1387\tntrun\game\vote\VoteState;
 
@@ -18,8 +19,7 @@ final class GameInstance {
     private array $playerIds = [];
     private QueueState $queueState;
     private VoteState $voteState;
-    private bool $selectedArenaPrepared = false;
-    private bool $playersTransferredToSelectedArena = false;
+    private ArenaStartState $arenaStartState;
 
     public function __construct(
         private string $id,
@@ -28,6 +28,7 @@ final class GameInstance {
     ) {
         $this->queueState = new QueueState($queuePool, $queueSettings);
         $this->voteState = new VoteState($queuePool);
+        $this->arenaStartState = new ArenaStartState();
     }
 
     public function getId(): string {
@@ -125,19 +126,52 @@ final class GameInstance {
     }
 
     public function hasPreparedSelectedArena(): bool {
-        return $this->selectedArenaPrepared;
+        return $this->arenaStartState->hasPreparedSelectedArena();
     }
 
     public function markSelectedArenaPrepared(): void {
-        $this->selectedArenaPrepared = true;
+        $this->arenaStartState->markSelectedArenaPrepared();
     }
 
     public function hasTransferredPlayersToSelectedArena(): bool {
-        return $this->playersTransferredToSelectedArena;
+        return $this->arenaStartState->hasTransferredPlayers();
     }
 
     public function markPlayersTransferredToSelectedArena(): void {
-        $this->playersTransferredToSelectedArena = true;
+        $this->arenaStartState->markPlayersTransferred();
+    }
+
+    public function hasStartedArenaCountdown(): bool {
+        return $this->arenaStartState->hasStartedCountdown();
+    }
+
+    public function startArenaCountdown(): bool {
+        $selectedArenaConfig = $this->getSelectedArenaConfig();
+        if ($selectedArenaConfig === null) {
+            return false;
+        }
+
+        return $this->arenaStartState->startCountdown($selectedArenaConfig->getCountdownSeconds());
+    }
+
+    public function getArenaCountdownSecondsRemaining(): ?int {
+        return $this->arenaStartState->getCountdownSecondsRemaining();
+    }
+
+    public function tickArenaCountdown(): bool {
+        return $this->arenaStartState->tickCountdown();
+    }
+
+    public function hasCompletedArenaCountdown(): bool {
+        return $this->arenaStartState->hasCompletedCountdown();
+    }
+
+    public function hasBroadcastedArenaGo(): bool {
+        return $this->arenaStartState->hasBroadcastedGo();
+    }
+
+    public function markArenaGoBroadcasted(): void {
+        $this->arenaStartState->markGoBroadcasted();
     }
 
     public function lockQueue(): void {
@@ -164,8 +198,7 @@ final class GameInstance {
             && $this->queueState->getCountdownSecondsRemaining() === null
             && !$this->queueState->hasCompletedCountdown()
         ) {
-            $this->selectedArenaPrepared = false;
-            $this->playersTransferredToSelectedArena = false;
+            $this->arenaStartState->reset();
             $this->voteState->reopen();
         }
     }

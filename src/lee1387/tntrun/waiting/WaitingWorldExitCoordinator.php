@@ -41,7 +41,11 @@ final class WaitingWorldExitCoordinator {
 
     public function handleLeave(Player $player, PlayerSession $playerSession): void {
         $this->clearManagedExit($playerSession);
-        $this->queueManager->removePlayerSession($playerSession);
+        if ($playerSession->isInWaitingWorld()) {
+            $this->queueManager->removePlayerSession($playerSession);
+        } else {
+            $this->queueManager->removePlayerSessionSilently($playerSession);
+        }
 
         if ($playerSession->isInWaitingWorld()) {
             $playerSession->leaveWaitingWorld();

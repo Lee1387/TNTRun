@@ -6,9 +6,7 @@ namespace lee1387\tntrun\waiting\leave;
 
 use InvalidArgumentException;
 use lee1387\tntrun\arena\ArenaSpawn;
-use lee1387\tntrun\world\WorldLoader;
 use LogicException;
-use pocketmine\player\Player;
 
 final class LeaveDestination {
     public const TYPE_TRANSFER = "transfer";
@@ -52,24 +50,39 @@ final class LeaveDestination {
         );
     }
 
-    public function send(Player $player, WorldLoader $worldLoader): bool {
-        if ($this->type === self::TYPE_TRANSFER) {
-            if ($this->address === null || $this->port === null) {
-                throw new LogicException("Transfer leave destination is incomplete.");
-            }
+    public function isTransfer(): bool {
+        return $this->type === self::TYPE_TRANSFER;
+    }
 
-            return $player->transfer($this->address, $this->port);
+    public function getAddress(): string {
+        if ($this->address === null) {
+            throw new LogicException("Transfer leave destination is incomplete.");
         }
 
-        if ($this->worldName === null || $this->spawn === null) {
+        return $this->address;
+    }
+
+    public function getPort(): int {
+        if ($this->port === null) {
+            throw new LogicException("Transfer leave destination is incomplete.");
+        }
+
+        return $this->port;
+    }
+
+    public function getWorldName(): string {
+        if ($this->worldName === null) {
             throw new LogicException("World leave destination is incomplete.");
         }
 
-        $world = $worldLoader->load($this->worldName);
-        if ($world === null) {
-            return false;
+        return $this->worldName;
+    }
+
+    public function getSpawn(): ArenaSpawn {
+        if ($this->spawn === null) {
+            throw new LogicException("World leave destination is incomplete.");
         }
 
-        return $player->teleport($this->spawn->toLocation($world));
+        return $this->spawn;
     }
 }

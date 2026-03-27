@@ -67,7 +67,7 @@ final class BootstrapRegistrar {
         ));
 
         $this->plugin->getScheduler()->scheduleRepeatingTask(
-            new QueueTickTask($runtime->queueManager, $runtime->gameStartManager),
+            new QueueTickTask($runtime->queueTickProcessor),
             20
         );
     }

@@ -9,7 +9,7 @@ TNTRun is a PocketMine-MP minigame plugin built around:
 
 ## Download
 
-- Latest Dev Build: https://poggit.pmmp.io/ci/Lee1387/TNTRun/~
+- Latest Dev Build: https://poggit.pmmp.io/ci/Lee1387/TNTRun/~/
 - Latest Stable Release: coming soon
 
 ## Overview

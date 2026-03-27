@@ -7,12 +7,15 @@ namespace lee1387\tntrun\bootstrap;
 use lee1387\tntrun\game\GameManager;
 use lee1387\tntrun\game\queue\QueueBroadcaster;
 use lee1387\tntrun\game\queue\QueueManager;
+use lee1387\tntrun\game\queue\QueueTickProcessor;
+use lee1387\tntrun\game\start\ArenaStartBroadcaster;
 use lee1387\tntrun\game\start\GameStartManager;
 use lee1387\tntrun\game\vote\VoteBroadcaster;
 use lee1387\tntrun\player\OnlinePlayerRegistry;
 use lee1387\tntrun\player\PlayerSessionManager;
 use lee1387\tntrun\player\TNTRunPlayerGuard;
 use lee1387\tntrun\TNTRun;
+use lee1387\tntrun\waiting\leave\LeaveDestinationSender;
 use lee1387\tntrun\waiting\leave\WaitingWorldLeaveService;
 use lee1387\tntrun\waiting\WaitingWorldEntryService;
 use lee1387\tntrun\waiting\WaitingWorldExitCoordinator;
@@ -29,28 +32,31 @@ final class BootstrapRuntimeFactory {
     public function create(BootstrapConfig $config): BootstrapRuntime {
         $onlinePlayerRegistry = new OnlinePlayerRegistry();
         $playerSessionManager = new PlayerSessionManager();
+        $gameManager = new GameManager();
         $worldGuard = new TNTRunWorldGuard($this->resolveProtectedWorldNames($config));
         $playerGuard = new TNTRunPlayerGuard($playerSessionManager, $worldGuard);
         $waitingWorldLoadout = new WaitingWorldLoadout($config->messages->leave(), $config->messages->vote());
-        $gameManager = new GameManager();
         $worldLoader = new WorldLoader($this->plugin->getServer()->getWorldManager(), $worldGuard);
-        $queueManager = new QueueManager(
-            $config->arenaConfigs,
-            $gameManager,
-            $config->queueSettings,
-            new QueueBroadcaster($onlinePlayerRegistry, $config->messages->queue()),
-            new VoteBroadcaster($onlinePlayerRegistry, $config->messages->vote())
-        );
+        $queueBroadcaster = new QueueBroadcaster($onlinePlayerRegistry, $config->messages->queue());
+        $voteBroadcaster = new VoteBroadcaster($onlinePlayerRegistry, $config->messages->vote());
+        $queueManager = $this->createQueueManager($config, $gameManager, $queueBroadcaster);
         $waitingWorldExitCoordinator = new WaitingWorldExitCoordinator(
             $queueManager,
             $playerGuard,
             $waitingWorldLoadout
         );
-        $gameStartManager = new GameStartManager(
+        $gameStartManager = $this->createGameStartManager(
             $worldLoader,
-            $onlinePlayerRegistry,
             $playerSessionManager,
-            $waitingWorldExitCoordinator
+            $playerGuard,
+            $waitingWorldExitCoordinator,
+            $onlinePlayerRegistry
+        );
+        $queueTickProcessor = $this->createQueueTickProcessor(
+            $gameManager,
+            $queueBroadcaster,
+            $voteBroadcaster,
+            $gameStartManager
         );
         $worldLoader->applyManagedWorldPolicies();
 
@@ -60,6 +66,7 @@ final class BootstrapRuntimeFactory {
                 $config->waitingWorld->getWorldName()
             ));
         }
+
         $waitingWorldEntryService = new WaitingWorldEntryService(
             $config->waitingWorld,
             $queueManager,
@@ -71,7 +78,7 @@ final class BootstrapRuntimeFactory {
         $waitingWorldLeaveService = new WaitingWorldLeaveService(
             $playerSessionManager,
             $config->leaveDestination,
-            $worldLoader,
+            new LeaveDestinationSender($worldLoader),
             $queueManager,
             $waitingWorldExitCoordinator
         );
@@ -82,9 +89,7 @@ final class BootstrapRuntimeFactory {
             $worldGuard,
             $playerGuard,
             $gameManager,
-            $queueManager,
-            $gameStartManager,
-            $worldLoader,
+            $queueTickProcessor,
             $waitingWorldExitCoordinator,
             $waitingWorldEntryService,
             $waitingWorldLeaveService,
@@ -105,5 +110,49 @@ final class BootstrapRuntimeFactory {
         }
 
         return \array_keys($worldNames);
+    }
+
+    private function createQueueManager(
+        BootstrapConfig $config,
+        GameManager $gameManager,
+        QueueBroadcaster $queueBroadcaster
+    ): QueueManager {
+        return new QueueManager(
+            $config->arenaConfigs,
+            $gameManager,
+            $config->queueSettings,
+            $queueBroadcaster
+        );
+    }
+
+    private function createQueueTickProcessor(
+        GameManager $gameManager,
+        QueueBroadcaster $queueBroadcaster,
+        VoteBroadcaster $voteBroadcaster,
+        GameStartManager $gameStartManager
+    ): QueueTickProcessor {
+        return new QueueTickProcessor(
+            $gameManager,
+            $queueBroadcaster,
+            $voteBroadcaster,
+            $gameStartManager
+        );
+    }
+
+    private function createGameStartManager(
+        WorldLoader $worldLoader,
+        PlayerSessionManager $playerSessionManager,
+        TNTRunPlayerGuard $playerGuard,
+        WaitingWorldExitCoordinator $waitingWorldExitCoordinator,
+        OnlinePlayerRegistry $onlinePlayerRegistry
+    ): GameStartManager {
+        return new GameStartManager(
+            $worldLoader,
+            $playerSessionManager,
+            $playerGuard,
+            $waitingWorldExitCoordinator,
+            new ArenaStartBroadcaster($onlinePlayerRegistry),
+            $onlinePlayerRegistry
+        );
     }
 }

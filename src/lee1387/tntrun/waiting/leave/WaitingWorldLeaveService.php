@@ -7,14 +7,13 @@ namespace lee1387\tntrun\waiting\leave;
 use lee1387\tntrun\game\queue\QueueManager;
 use lee1387\tntrun\player\PlayerSessionManager;
 use lee1387\tntrun\waiting\WaitingWorldExitCoordinator;
-use lee1387\tntrun\world\WorldLoader;
 use pocketmine\player\Player;
 
 final class WaitingWorldLeaveService {
     public function __construct(
         private PlayerSessionManager $playerSessionManager,
         private LeaveDestination $leaveDestination,
-        private WorldLoader $worldLoader,
+        private LeaveDestinationSender $leaveDestinationSender,
         private QueueManager $queueManager,
         private WaitingWorldExitCoordinator $waitingWorldExitCoordinator
     ) {}
@@ -32,7 +31,7 @@ final class WaitingWorldLeaveService {
         }
 
         $this->waitingWorldExitCoordinator->markManagedExit($playerSession);
-        if (!$this->leaveDestination->send($player, $this->worldLoader)) {
+        if (!$this->leaveDestinationSender->send($player, $this->leaveDestination)) {
             $this->waitingWorldExitCoordinator->clearManagedExit($playerSession);
             return WaitingWorldLeaveResult::DESTINATION_FAILED;
         }
