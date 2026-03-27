@@ -163,7 +163,7 @@ elimination-y: 58
 min-players: 2
 max-players: 8
 countdown-seconds: 10
-block-fall-delay-ticks: 8
+block-fall-delay-ticks: 5
 ```
 
 ### Arena Notes

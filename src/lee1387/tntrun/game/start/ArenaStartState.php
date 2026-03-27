@@ -80,6 +80,10 @@ final class ArenaStartState {
         $this->goBroadcasted = true;
     }
 
+    public function hasStartedGameplay(): bool {
+        return $this->countdownCompleted && $this->goBroadcasted;
+    }
+
     public function reset(): void {
         $this->selectedArenaPrepared = false;
         $this->playersTransferred = false;

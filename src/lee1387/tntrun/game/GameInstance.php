@@ -174,6 +174,10 @@ final class GameInstance {
         $this->arenaStartState->markGoBroadcasted();
     }
 
+    public function hasStartedGameplay(): bool {
+        return $this->arenaStartState->hasStartedGameplay();
+    }
+
     public function lockQueue(): void {
         $this->queueState->lock();
     }

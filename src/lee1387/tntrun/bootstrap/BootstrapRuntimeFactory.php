@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace lee1387\tntrun\bootstrap;
 
 use lee1387\tntrun\game\GameManager;
+use lee1387\tntrun\game\play\BlockFallManager;
 use lee1387\tntrun\game\queue\QueueBroadcaster;
 use lee1387\tntrun\game\queue\QueueManager;
 use lee1387\tntrun\game\queue\QueueTickProcessor;
@@ -37,6 +38,7 @@ final class BootstrapRuntimeFactory {
         $playerGuard = new TNTRunPlayerGuard($playerSessionManager, $worldGuard);
         $waitingWorldLoadout = new WaitingWorldLoadout($config->messages->leave(), $config->messages->vote());
         $worldLoader = new WorldLoader($this->plugin->getServer()->getWorldManager(), $worldGuard);
+        $blockFallManager = new BlockFallManager($worldLoader, $gameManager, $onlinePlayerRegistry);
         $queueBroadcaster = new QueueBroadcaster($onlinePlayerRegistry, $config->messages->queue());
         $voteBroadcaster = new VoteBroadcaster($onlinePlayerRegistry, $config->messages->vote());
         $queueManager = $this->createQueueManager($config, $gameManager, $queueBroadcaster);
@@ -89,6 +91,7 @@ final class BootstrapRuntimeFactory {
             $worldGuard,
             $playerGuard,
             $gameManager,
+            $blockFallManager,
             $queueTickProcessor,
             $waitingWorldExitCoordinator,
             $waitingWorldEntryService,

@@ -7,6 +7,7 @@ namespace lee1387\tntrun\bootstrap;
 use lee1387\tntrun\command\subcommand\JoinSubcommand;
 use lee1387\tntrun\command\subcommand\LeaveSubcommand;
 use lee1387\tntrun\command\TNTRunCommand;
+use lee1387\tntrun\game\play\task\BlockFallTask;
 use lee1387\tntrun\game\queue\task\QueueTickTask;
 use lee1387\tntrun\game\vote\listener\VoteItemListener;
 use lee1387\tntrun\player\listener\PlayerLifecycleListener;
@@ -69,6 +70,10 @@ final class BootstrapRegistrar {
         $this->plugin->getScheduler()->scheduleRepeatingTask(
             new QueueTickTask($runtime->queueTickProcessor),
             20
+        );
+        $this->plugin->getScheduler()->scheduleRepeatingTask(
+            new BlockFallTask($runtime->blockFallManager),
+            1
         );
     }
 
