@@ -5,6 +5,7 @@ branches:
 projects:
   TNTRun:
     path: ""
-  lint:
-    phpstan: false
+
+    lint:
+      phpstan: false
 ...

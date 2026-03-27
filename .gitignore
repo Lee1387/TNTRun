@@ -1,8 +1,6 @@
 /vendor/
 /build/
-/tools/phpstan/vendor/
-/tools/php-cs-fixer/vendor/
-/tools/php-cs-fixer/.php-cs-fixer.cache
+.php-cs-fixer.cache
 *.phar
 *.log
 /coverage/
