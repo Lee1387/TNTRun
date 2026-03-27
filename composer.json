@@ -5,12 +5,9 @@
   },
   "autoload": {
     "psr-4": {
-      "lee1387\\tntrun\\": "src/lee1387/tntrun/"
-    }
-  },
-  "config": {
-    "platform": {
-      "php": "8.2.0"
+      "": [
+        "src"
+      ]
     }
   }
 }
