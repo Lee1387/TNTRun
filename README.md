@@ -1,14 +1,55 @@
 # TNTRun
 
-## Main Config
+TNTRun is a PocketMine-MP minigame plugin built around:
 
-General plugin configuration lives in `resources/config.yml` and is copied to:
+- a shared waiting world
+- automatic queueing
+- arena-pack based map management
+- in-waiting-world arena voting
+
+## Download
+
+- Latest Dev Build: https://poggit.pmmp.io/ci/Lee1387/TNTRun/~
+- Latest Stable Release: coming soon
+
+## Overview
+
+Players can enter TNTRun with:
+
+```text
+/tntrun join
+/tntrun leave
+```
+
+On dedicated TNTRun servers, players can also be sent into the waiting world automatically on join by enabling `waiting-world.auto-join` in `config.yml`.
+
+## First Startup
+
+General plugin configuration lives in:
 
 ```text
 plugin_data/TNTRun/config.yml
 ```
 
-This file currently controls:
+Player-facing plugin messages live in:
+
+```text
+plugin_data/TNTRun/messages.yml
+```
+
+Arena packs live in:
+
+```text
+plugin_data/TNTRun/arenas/
+```
+
+If `plugin_data/TNTRun/arenas/` is empty on first startup, TNTRun will seed bundled example arena packs automatically.
+
+## Configuration
+
+### Main Config
+
+`config.yml` currently controls:
 
 - the TNTRun waiting world
 - whether players auto-join the waiting world on connect
@@ -19,17 +60,20 @@ Queue pools are derived automatically from arena `min-players` and `max-players`
 Players are assigned automatically after entering the waiting world.
 The current queueing logic prefers the most populated joinable queue and creates a new queue when needed.
 
-Player-facing plugin messages live in `resources/messages.yml` and are copied to:
+### Messages
 
-```text
-plugin_data/TNTRun/messages.yml
-```
+`messages.yml` controls player-facing text such as:
+
+- join and leave messages
+- queue broadcast messages
+- vote item and vote form text
+- vote result announcements
 
 ## Arena Packs
 
 Arenas are not defined in `config.yml`.
 
-Instead, each arena is its own pack inside:
+Each arena is its own pack inside:
 
 ```text
 plugin_data/TNTRun/arenas/<arenaName>/
@@ -44,7 +88,8 @@ Each arena pack must contain:
   - `<arenaName>.tar`
 
 A bundled example pack is available at [`resources/arenas/aladdin`](resources/arenas/aladdin).
-If `plugin_data/TNTRun/arenas/` is empty on first startup, the plugin will copy bundled example arena packs there automatically.
+
+### Pack Layout
 
 Example:
 
@@ -121,17 +166,33 @@ countdown-seconds: 10
 block-fall-delay-ticks: 8
 ```
 
-Notes:
+### Arena Notes
 
 - the arena name comes from the folder name, so it does not need to be repeated in `arena.yml`
 - the world source name must match the arena folder name
 - `player-spawns` must contain at least `max-players` entries
 - the plugin currently validates arena packs at startup
 
-## Building
+## Development
+
+### Build
 
 To build the plugin phar:
 
 ```powershell
 php -d phar.readonly=0 tools/build-plugin.php
+```
+
+### Code Quality
+
+To run the formatter:
+
+```powershell
+composer format
+```
+
+To run static analysis:
+
+```powershell
+composer analyse
 ```
