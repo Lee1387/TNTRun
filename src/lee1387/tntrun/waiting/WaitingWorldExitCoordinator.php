@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun\waiting;
 
+use lee1387\tntrun\game\play\EliminationManager;
 use lee1387\tntrun\game\queue\QueueManager;
 use lee1387\tntrun\player\PlayerSession;
 use lee1387\tntrun\player\TNTRunPlayerGuard;
@@ -17,6 +18,7 @@ final class WaitingWorldExitCoordinator {
 
     public function __construct(
         private QueueManager $queueManager,
+        private EliminationManager $eliminationManager,
         private TNTRunPlayerGuard $playerGuard,
         private WaitingWorldLoadout $waitingWorldLoadout
     ) {}
@@ -44,6 +46,11 @@ final class WaitingWorldExitCoordinator {
         if ($playerSession->isInWaitingWorld()) {
             $this->queueManager->removePlayerSession($playerSession);
         } else {
+            $gameInstance = $this->queueManager->findGameInstanceByPlayerSession($playerSession);
+            if ($gameInstance !== null) {
+                $this->eliminationManager->broadcastDepartureIfActive($gameInstance, $player);
+            }
+
             $this->queueManager->removePlayerSessionSilently($playerSession);
         }
 

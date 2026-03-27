@@ -64,6 +64,32 @@ final class ConfigValueReader {
 
     /**
      * @param array<string, mixed> $data
+     * @return list<string>
+     */
+    public function requireStringList(array $data, string $key, string $path): array {
+        if (!\array_key_exists($key, $data)) {
+            throw new InvalidArgumentException(\sprintf('Missing config key "%s".', $path));
+        }
+
+        if (!\is_array($data[$key]) || !\array_is_list($data[$key])) {
+            throw new InvalidArgumentException(\sprintf('Config key "%s" must be a list of strings.', $path));
+        }
+
+        $strings = [];
+
+        foreach ($data[$key] as $index => $value) {
+            if (!\is_string($value)) {
+                throw new InvalidArgumentException(\sprintf('Config key "%s.%d" must be a string.', $path, $index));
+            }
+
+            $strings[] = \trim($value);
+        }
+
+        return $strings;
+    }
+
+    /**
+     * @param array<string, mixed> $data
      */
     public function requireInt(array $data, string $key, string $path): int {
         if (!\array_key_exists($key, $data)) {

@@ -9,6 +9,7 @@ final class Messages {
         private JoinMessages $join,
         private LeaveMessages $leave,
         private QueueMessages $queue,
+        private PlayMessages $play,
         private VoteMessages $vote
     ) {}
 
@@ -22,6 +23,10 @@ final class Messages {
 
     public function queue(): QueueMessages {
         return $this->queue;
+    }
+
+    public function play(): PlayMessages {
+        return $this->play;
     }
 
     public function vote(): VoteMessages {

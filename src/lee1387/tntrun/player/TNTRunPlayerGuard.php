@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun\player;
 
+use lee1387\tntrun\game\GameManager;
 use lee1387\tntrun\world\TNTRunWorldGuard;
 use pocketmine\entity\effect\EffectInstance;
 use pocketmine\entity\effect\VanillaEffects;
@@ -14,7 +15,8 @@ use pocketmine\player\Player;
 final class TNTRunPlayerGuard {
     public function __construct(
         private PlayerSessionManager $playerSessionManager,
-        private TNTRunWorldGuard $worldGuard
+        private TNTRunWorldGuard $worldGuard,
+        private GameManager $gameManager
     ) {}
 
     public function isProtected(Human $player): bool {
@@ -48,8 +50,18 @@ final class TNTRunPlayerGuard {
         $this->applyNightVision($player);
     }
 
+    public function prepareSpectator(Player $player): void {
+        $player->setNoClientPredictions(false);
+        $player->setGamemode(GameMode::SPECTATOR());
+    }
+
     public function cleanup(Player $player): void {
         $player->setNoClientPredictions(false);
+
+        if ($player->getGamemode() === GameMode::SPECTATOR()) {
+            $player->setGamemode(GameMode::ADVENTURE());
+        }
+
         $player->getEffects()->remove(VanillaEffects::NIGHT_VISION());
     }
 
@@ -59,6 +71,20 @@ final class TNTRunPlayerGuard {
 
     public function unfreeze(Player $player): void {
         $player->setNoClientPredictions(false);
+    }
+
+    public function isSpectator(Player $player): bool {
+        $playerSession = $this->playerSessionManager->get($player);
+        if ($playerSession === null) {
+            return false;
+        }
+
+        $gameInstance = $this->gameManager->findGameInstanceByPlayerSession($playerSession);
+        if ($gameInstance === null) {
+            return false;
+        }
+
+        return $gameInstance->isSpectatorPlayerId($playerSession->getPlayerId());
     }
 
     private function applyNightVision(Player $player): void {

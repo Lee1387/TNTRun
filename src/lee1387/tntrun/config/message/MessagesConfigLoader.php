@@ -18,12 +18,14 @@ final class MessagesConfigLoader {
         $joinData = $this->valueReader->requireMap($this->config->get("join"), "join");
         $leaveData = $this->valueReader->requireMap($this->config->get("leave"), "leave");
         $queueData = $this->valueReader->requireMap($this->config->get("queue"), "queue");
+        $playData = $this->valueReader->requireMap($this->config->get("play"), "play");
         $voteData = $this->valueReader->requireMap($this->config->get("vote"), "vote");
 
         return new Messages(
             $this->loadJoinMessages($formatter, $joinData),
             $this->loadLeaveMessages($formatter, $leaveData),
             $this->loadQueueMessages($formatter, $queueData),
+            $this->loadPlayMessages($formatter, $playData),
             $this->loadVoteMessages($formatter, $voteData)
         );
     }
@@ -62,6 +64,16 @@ final class MessagesConfigLoader {
             $formatter,
             $this->valueReader->requireString($queueData, "join-broadcast", "queue.join-broadcast"),
             $this->valueReader->requireString($queueData, "leave-broadcast", "queue.leave-broadcast")
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $playData
+     */
+    private function loadPlayMessages(MessageFormatter $formatter, array $playData): PlayMessages {
+        return new PlayMessages(
+            $formatter,
+            $this->valueReader->requireStringList($playData, "elimination-messages", "play.elimination-messages")
         );
     }
 

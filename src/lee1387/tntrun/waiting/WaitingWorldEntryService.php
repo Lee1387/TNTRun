@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace lee1387\tntrun\waiting;
 
+use lee1387\tntrun\game\play\EliminationManager;
 use lee1387\tntrun\game\queue\QueueManager;
 use lee1387\tntrun\player\PlayerSessionManager;
 use lee1387\tntrun\player\TNTRunPlayerGuard;
@@ -14,6 +15,7 @@ final class WaitingWorldEntryService {
     public function __construct(
         private WaitingWorld $waitingWorld,
         private QueueManager $queueManager,
+        private EliminationManager $eliminationManager,
         private PlayerSessionManager $playerSessionManager,
         private WorldLoader $worldLoader,
         private TNTRunPlayerGuard $playerGuard,
@@ -39,6 +41,7 @@ final class WaitingWorldEntryService {
         }
 
         if ($currentGameInstance !== null) {
+            $this->eliminationManager->broadcastDepartureIfActive($currentGameInstance, $player);
             $this->queueManager->removePlayerSessionSilently($playerSession);
         }
 

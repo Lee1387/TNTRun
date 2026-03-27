@@ -90,10 +90,15 @@ final class TNTRunProtectionListener implements Listener {
     }
 
     public function onPlayerGameModeChange(PlayerGameModeChangeEvent $event): void {
-        if (
-            $this->playerGuard->isProtected($event->getPlayer())
-            && $event->getNewGamemode() !== GameMode::ADVENTURE()
-        ) {
+        if (!$this->playerGuard->isProtected($event->getPlayer())) {
+            return;
+        }
+
+        $expectedGamemode = $this->playerGuard->isSpectator($event->getPlayer())
+            ? GameMode::SPECTATOR()
+            : GameMode::ADVENTURE();
+
+        if ($event->getNewGamemode() !== $expectedGamemode) {
             $event->cancel();
         }
     }

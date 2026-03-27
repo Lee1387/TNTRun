@@ -17,6 +17,10 @@ final class GameInstance {
      * @var array<string, true>
      */
     private array $playerIds = [];
+    /**
+     * @var array<string, true>
+     */
+    private array $spectatorPlayerIds = [];
     private QueueState $queueState;
     private VoteState $voteState;
     private ArenaStartState $arenaStartState;
@@ -72,6 +76,7 @@ final class GameInstance {
         }
 
         unset($this->playerIds[$playerId]);
+        unset($this->spectatorPlayerIds[$playerId]);
         $this->voteState->removeVote($playerId);
         $this->refreshQueueState();
 
@@ -178,6 +183,24 @@ final class GameInstance {
         return $this->arenaStartState->hasStartedGameplay();
     }
 
+    public function markPlayerIdSpectator(string $playerId): bool {
+        if (!isset($this->playerIds[$playerId]) || isset($this->spectatorPlayerIds[$playerId])) {
+            return false;
+        }
+
+        $this->spectatorPlayerIds[$playerId] = true;
+
+        return true;
+    }
+
+    public function isActivePlayerId(string $playerId): bool {
+        return isset($this->playerIds[$playerId]) && !isset($this->spectatorPlayerIds[$playerId]);
+    }
+
+    public function isSpectatorPlayerId(string $playerId): bool {
+        return isset($this->spectatorPlayerIds[$playerId]);
+    }
+
     public function lockQueue(): void {
         $this->queueState->lock();
     }
@@ -187,6 +210,16 @@ final class GameInstance {
      */
     public function getPlayerIds(): array {
         return \array_keys($this->playerIds);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getActivePlayerIds(): array {
+        return \array_values(\array_filter(
+            \array_keys($this->playerIds),
+            fn (string $playerId): bool => !isset($this->spectatorPlayerIds[$playerId])
+        ));
     }
 
     public function canAcceptNewPlayers(): bool {

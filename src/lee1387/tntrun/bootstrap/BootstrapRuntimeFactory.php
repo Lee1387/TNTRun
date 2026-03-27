@@ -6,6 +6,9 @@ namespace lee1387\tntrun\bootstrap;
 
 use lee1387\tntrun\game\GameManager;
 use lee1387\tntrun\game\play\BlockFallManager;
+use lee1387\tntrun\game\play\EliminationBroadcaster;
+use lee1387\tntrun\game\play\EliminationManager;
+use lee1387\tntrun\game\play\PlayTickProcessor;
 use lee1387\tntrun\game\queue\QueueBroadcaster;
 use lee1387\tntrun\game\queue\QueueManager;
 use lee1387\tntrun\game\queue\QueueTickProcessor;
@@ -35,15 +38,23 @@ final class BootstrapRuntimeFactory {
         $playerSessionManager = new PlayerSessionManager();
         $gameManager = new GameManager();
         $worldGuard = new TNTRunWorldGuard($this->resolveProtectedWorldNames($config));
-        $playerGuard = new TNTRunPlayerGuard($playerSessionManager, $worldGuard);
+        $playerGuard = new TNTRunPlayerGuard($playerSessionManager, $worldGuard, $gameManager);
         $waitingWorldLoadout = new WaitingWorldLoadout($config->messages->leave(), $config->messages->vote());
         $worldLoader = new WorldLoader($this->plugin->getServer()->getWorldManager(), $worldGuard);
         $blockFallManager = new BlockFallManager($worldLoader, $gameManager, $onlinePlayerRegistry);
+        $eliminationManager = new EliminationManager(
+            $gameManager,
+            $onlinePlayerRegistry,
+            $playerGuard,
+            new EliminationBroadcaster($onlinePlayerRegistry, $config->messages->play())
+        );
+        $playTickProcessor = new PlayTickProcessor($eliminationManager, $blockFallManager);
         $queueBroadcaster = new QueueBroadcaster($onlinePlayerRegistry, $config->messages->queue());
         $voteBroadcaster = new VoteBroadcaster($onlinePlayerRegistry, $config->messages->vote());
         $queueManager = $this->createQueueManager($config, $gameManager, $queueBroadcaster);
         $waitingWorldExitCoordinator = new WaitingWorldExitCoordinator(
             $queueManager,
+            $eliminationManager,
             $playerGuard,
             $waitingWorldLoadout
         );
@@ -72,6 +83,7 @@ final class BootstrapRuntimeFactory {
         $waitingWorldEntryService = new WaitingWorldEntryService(
             $config->waitingWorld,
             $queueManager,
+            $eliminationManager,
             $playerSessionManager,
             $worldLoader,
             $playerGuard,
@@ -91,7 +103,7 @@ final class BootstrapRuntimeFactory {
             $worldGuard,
             $playerGuard,
             $gameManager,
-            $blockFallManager,
+            $playTickProcessor,
             $queueTickProcessor,
             $waitingWorldExitCoordinator,
             $waitingWorldEntryService,

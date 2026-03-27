@@ -14,6 +14,12 @@ queue:
   join-broadcast: "&b{player} joined the game &7(&f{current}&7/&f{max} &7players)"
   leave-broadcast: "&c{player} left the game &7(&f{current}&7/&f{max} &7players)"
 
+play:
+  elimination-messages:
+    - "&c{player} was eliminated."
+    - "&c{player} fell into the void."
+    - "&c{player} is out of the game."
+
 vote:
   item-name: "&aVote Arena"
   form-title: "&bVote Arena"

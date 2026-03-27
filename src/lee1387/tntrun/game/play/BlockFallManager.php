@@ -64,7 +64,7 @@ final class BlockFallManager {
                 continue;
             }
 
-            foreach ($gameInstance->getPlayerIds() as $playerId) {
+            foreach ($gameInstance->getActivePlayerIds() as $playerId) {
                 $player = $this->onlinePlayerRegistry->getById($playerId);
                 if (
                     $player === null
