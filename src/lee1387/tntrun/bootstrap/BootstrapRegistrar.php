@@ -66,7 +66,10 @@ final class BootstrapRegistrar {
             $runtime->waitingWorldExitCoordinator
         ));
 
-        $this->plugin->getScheduler()->scheduleRepeatingTask(new QueueTickTask($runtime->queueManager), 20);
+        $this->plugin->getScheduler()->scheduleRepeatingTask(
+            new QueueTickTask($runtime->queueManager, $runtime->gameStartManager),
+            20
+        );
     }
 
     private function registerCommand(TNTRunCommand $command): void {

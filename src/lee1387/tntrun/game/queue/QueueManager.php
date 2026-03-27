@@ -7,6 +7,7 @@ namespace lee1387\tntrun\game\queue;
 use lee1387\tntrun\arena\ArenaConfig;
 use lee1387\tntrun\game\GameInstance;
 use lee1387\tntrun\game\GameManager;
+use lee1387\tntrun\game\start\GameStartManager;
 use lee1387\tntrun\game\vote\VoteBroadcaster;
 use lee1387\tntrun\player\PlayerSession;
 
@@ -61,6 +62,10 @@ final class QueueManager {
         return $gameInstance;
     }
 
+    public function findGameInstanceByPlayerSession(PlayerSession $playerSession): ?GameInstance {
+        return $this->gameManager->findGameInstanceByPlayerSession($playerSession);
+    }
+
     public function removePlayerSession(PlayerSession $playerSession): void {
         $gameInstance = $this->gameManager->removePlayerSession($playerSession);
         if ($gameInstance === null) {
@@ -74,9 +79,13 @@ final class QueueManager {
         }
     }
 
-    public function tick(): void {
+    public function tick(GameStartManager $gameStartManager): void {
         foreach ($this->gameManager->getGameInstances() as $gameInstance) {
             if ($gameInstance->hasCompletedQueueCountdown()) {
+                if (!$gameInstance->hasTransferredPlayersToSelectedArena()) {
+                    $gameStartManager->transferPlayersToSelectedArena($gameInstance);
+                }
+
                 continue;
             }
 
@@ -89,6 +98,14 @@ final class QueueManager {
                 $voteResult = $gameInstance->closeVoting();
                 $gameInstance->lockQueue();
                 $this->voteBroadcaster->broadcastSelection($gameInstance, $voteResult);
+            }
+
+            if (
+                $countdownSecondsRemaining !== null
+                && $countdownSecondsRemaining <= 5
+                && !$gameInstance->hasPreparedSelectedArena()
+            ) {
+                $gameStartManager->prepareSelectedArena($gameInstance);
             }
 
             if ($countdownSecondsRemaining !== null) {

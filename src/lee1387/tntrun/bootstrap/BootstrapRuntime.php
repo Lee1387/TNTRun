@@ -6,6 +6,7 @@ namespace lee1387\tntrun\bootstrap;
 
 use lee1387\tntrun\game\GameManager;
 use lee1387\tntrun\game\queue\QueueManager;
+use lee1387\tntrun\game\start\GameStartManager;
 use lee1387\tntrun\player\OnlinePlayerRegistry;
 use lee1387\tntrun\player\PlayerSessionManager;
 use lee1387\tntrun\player\TNTRunPlayerGuard;
@@ -24,6 +25,7 @@ final class BootstrapRuntime {
         public readonly TNTRunPlayerGuard $playerGuard,
         public readonly GameManager $gameManager,
         public readonly QueueManager $queueManager,
+        public readonly GameStartManager $gameStartManager,
         public readonly WorldLoader $worldLoader,
         public readonly WaitingWorldExitCoordinator $waitingWorldExitCoordinator,
         public readonly WaitingWorldEntryService $waitingWorldEntryService,

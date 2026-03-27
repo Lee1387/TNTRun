@@ -48,6 +48,6 @@ final class WaitingWorldExitListener implements Listener {
             return;
         }
 
-        $this->waitingWorldExitCoordinator->handleExit($player, $playerSession);
+        $this->waitingWorldExitCoordinator->handleLeave($player, $playerSession);
     }
 }

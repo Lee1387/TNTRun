@@ -18,6 +18,8 @@ final class GameInstance {
     private array $playerIds = [];
     private QueueState $queueState;
     private VoteState $voteState;
+    private bool $selectedArenaPrepared = false;
+    private bool $playersTransferredToSelectedArena = false;
 
     public function __construct(
         private string $id,
@@ -122,6 +124,22 @@ final class GameInstance {
         return $this->voteState->getSelectedArenaConfig();
     }
 
+    public function hasPreparedSelectedArena(): bool {
+        return $this->selectedArenaPrepared;
+    }
+
+    public function markSelectedArenaPrepared(): void {
+        $this->selectedArenaPrepared = true;
+    }
+
+    public function hasTransferredPlayersToSelectedArena(): bool {
+        return $this->playersTransferredToSelectedArena;
+    }
+
+    public function markPlayersTransferredToSelectedArena(): void {
+        $this->playersTransferredToSelectedArena = true;
+    }
+
     public function lockQueue(): void {
         $this->queueState->lock();
     }
@@ -146,6 +164,8 @@ final class GameInstance {
             && $this->queueState->getCountdownSecondsRemaining() === null
             && !$this->queueState->hasCompletedCountdown()
         ) {
+            $this->selectedArenaPrepared = false;
+            $this->playersTransferredToSelectedArena = false;
             $this->voteState->reopen();
         }
     }

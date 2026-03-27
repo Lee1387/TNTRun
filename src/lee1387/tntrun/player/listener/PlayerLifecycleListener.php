@@ -45,7 +45,7 @@ final class PlayerLifecycleListener implements Listener {
     private function cleanup(Player $player): void {
         $playerSession = $this->playerSessionManager->get($player);
         if ($playerSession !== null) {
-            $this->waitingWorldExitCoordinator->handleExit($player, $playerSession);
+            $this->waitingWorldExitCoordinator->handleLeave($player, $playerSession);
             $this->playerSessionManager->remove($player);
         }
 

@@ -27,6 +27,8 @@ final class WaitingWorldEntryService {
             return WaitingWorldEntryResult::ALREADY_JOINED;
         }
 
+        $currentGameInstance = $this->queueManager->findGameInstanceByPlayerSession($playerSession);
+
         $world = $this->worldLoader->load($this->waitingWorld->getWorldName());
         if ($world === null) {
             return WaitingWorldEntryResult::WORLD_NOT_AVAILABLE;
@@ -34,6 +36,10 @@ final class WaitingWorldEntryService {
 
         if (!$player->teleport($this->waitingWorld->getSpawn()->toLocation($world))) {
             return WaitingWorldEntryResult::TELEPORT_FAILED;
+        }
+
+        if ($currentGameInstance !== null) {
+            $this->queueManager->removePlayerSession($playerSession);
         }
 
         if (!$playerSession->joinWaitingWorld()) {

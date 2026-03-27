@@ -39,15 +39,21 @@ final class WaitingWorldExitCoordinator {
         return true;
     }
 
-    public function handleExit(Player $player, PlayerSession $playerSession): void {
+    public function handleLeave(Player $player, PlayerSession $playerSession): void {
         $this->clearManagedExit($playerSession);
+        $this->queueManager->removePlayerSession($playerSession);
 
         if ($playerSession->isInWaitingWorld()) {
-            $this->queueManager->removePlayerSession($playerSession);
             $playerSession->leaveWaitingWorld();
         }
 
         $this->playerGuard->cleanup($player);
+        $this->waitingWorldLoadout->clear($player);
+    }
+
+    public function handleArenaTransfer(Player $player, PlayerSession $playerSession): void {
+        $this->clearManagedExit($playerSession);
+        $playerSession->leaveWaitingWorld();
         $this->waitingWorldLoadout->clear($player);
     }
 }
