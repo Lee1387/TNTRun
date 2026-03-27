@@ -18,6 +18,7 @@ use lee1387\tntrun\waiting\WaitingWorldExitCoordinator;
 use lee1387\tntrun\waiting\WaitingWorldLoadout;
 use lee1387\tntrun\world\TNTRunWorldGuard;
 use lee1387\tntrun\world\WorldLoader;
+use RuntimeException;
 
 final class BootstrapRuntimeFactory {
     public function __construct(
@@ -27,7 +28,7 @@ final class BootstrapRuntimeFactory {
     public function create(BootstrapConfig $config): BootstrapRuntime {
         $onlinePlayerRegistry = new OnlinePlayerRegistry();
         $playerSessionManager = new PlayerSessionManager();
-        $worldGuard = new TNTRunWorldGuard([$config->waitingWorld->getWorldName()]);
+        $worldGuard = new TNTRunWorldGuard($this->resolveProtectedWorldNames($config));
         $playerGuard = new TNTRunPlayerGuard($playerSessionManager, $worldGuard);
         $waitingWorldLoadout = new WaitingWorldLoadout($config->messages->leave(), $config->messages->vote());
         $gameManager = new GameManager();
@@ -38,12 +39,21 @@ final class BootstrapRuntimeFactory {
             new QueueBroadcaster($onlinePlayerRegistry, $config->messages->queue()),
             new VoteBroadcaster($onlinePlayerRegistry, $config->messages->vote())
         );
+        $worldLoader = new WorldLoader($this->plugin->getServer()->getWorldManager(), $worldGuard);
+        $worldLoader->applyManagedWorldPolicies();
+
+        if ($config->waitingWorld->isAutoJoinEnabled() && $worldLoader->loadAndSetAsDefault($config->waitingWorld->getWorldName()) === null) {
+            throw new RuntimeException(\sprintf(
+                'The TNTRun waiting world "%s" could not be loaded for auto-join startup.',
+                $config->waitingWorld->getWorldName()
+            ));
+        }
+
         $waitingWorldExitCoordinator = new WaitingWorldExitCoordinator(
             $queueManager,
             $playerGuard,
             $waitingWorldLoadout
         );
-        $worldLoader = new WorldLoader($this->plugin->getServer()->getWorldManager());
         $waitingWorldEntryService = new WaitingWorldEntryService(
             $config->waitingWorld,
             $queueManager,
@@ -72,5 +82,20 @@ final class BootstrapRuntimeFactory {
             $waitingWorldLeaveService,
             $waitingWorldLoadout
         );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function resolveProtectedWorldNames(BootstrapConfig $config): array {
+        $worldNames = [
+            $config->waitingWorld->getWorldName() => true,
+        ];
+
+        foreach ($config->arenaConfigs as $arenaConfig) {
+            $worldNames[$arenaConfig->getWorldName()] = true;
+        }
+
+        return \array_keys($worldNames);
     }
 }

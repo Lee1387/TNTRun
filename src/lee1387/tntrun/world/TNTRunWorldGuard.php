@@ -24,7 +24,11 @@ final class TNTRunWorldGuard {
     }
 
     public function isProtectedWorld(World $world): bool {
-        return isset($this->protectedWorldNames[$world->getFolderName()]);
+        return $this->isProtectedWorldName($world->getFolderName());
+    }
+
+    public function isProtectedWorldName(string $worldName): bool {
+        return isset($this->protectedWorldNames[$worldName]);
     }
 
     public function isProtectedBlock(Block $block): bool {
