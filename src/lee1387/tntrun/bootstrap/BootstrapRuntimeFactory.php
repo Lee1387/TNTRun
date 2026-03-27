@@ -9,6 +9,7 @@ use lee1387\tntrun\game\play\BlockFallManager;
 use lee1387\tntrun\game\play\EliminationBroadcaster;
 use lee1387\tntrun\game\play\EliminationManager;
 use lee1387\tntrun\game\play\PlayTickProcessor;
+use lee1387\tntrun\game\play\spectator\SpectatorLoadout;
 use lee1387\tntrun\game\queue\QueueBroadcaster;
 use lee1387\tntrun\game\queue\QueueManager;
 use lee1387\tntrun\game\queue\QueueTickProcessor;
@@ -17,6 +18,7 @@ use lee1387\tntrun\game\start\GameStartManager;
 use lee1387\tntrun\game\vote\VoteBroadcaster;
 use lee1387\tntrun\player\OnlinePlayerRegistry;
 use lee1387\tntrun\player\PlayerSessionManager;
+use lee1387\tntrun\player\TNTRunHotbarItems;
 use lee1387\tntrun\player\TNTRunPlayerGuard;
 use lee1387\tntrun\TNTRun;
 use lee1387\tntrun\waiting\leave\LeaveDestinationSender;
@@ -39,13 +41,16 @@ final class BootstrapRuntimeFactory {
         $gameManager = new GameManager();
         $worldGuard = new TNTRunWorldGuard($this->resolveProtectedWorldNames($config));
         $playerGuard = new TNTRunPlayerGuard($playerSessionManager, $worldGuard, $gameManager);
-        $waitingWorldLoadout = new WaitingWorldLoadout($config->messages->leave(), $config->messages->vote());
+        $hotbarItems = new TNTRunHotbarItems($config->messages->leave(), $config->messages->vote(), $config->messages->play());
+        $waitingWorldLoadout = new WaitingWorldLoadout($hotbarItems);
+        $spectatorLoadout = new SpectatorLoadout($hotbarItems);
         $worldLoader = new WorldLoader($this->plugin->getServer()->getWorldManager(), $worldGuard);
         $blockFallManager = new BlockFallManager($worldLoader, $gameManager, $onlinePlayerRegistry);
         $eliminationManager = new EliminationManager(
             $gameManager,
             $onlinePlayerRegistry,
             $playerGuard,
+            $spectatorLoadout,
             new EliminationBroadcaster($onlinePlayerRegistry, $config->messages->play())
         );
         $playTickProcessor = new PlayTickProcessor($eliminationManager, $blockFallManager);
@@ -102,12 +107,14 @@ final class BootstrapRuntimeFactory {
             $playerSessionManager,
             $worldGuard,
             $playerGuard,
+            $hotbarItems,
             $gameManager,
             $playTickProcessor,
             $queueTickProcessor,
             $waitingWorldExitCoordinator,
             $waitingWorldEntryService,
             $waitingWorldLeaveService,
+            $spectatorLoadout,
             $waitingWorldLoadout
         );
     }

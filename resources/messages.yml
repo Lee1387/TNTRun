@@ -15,6 +15,13 @@ queue:
   leave-broadcast: "&c{player} left the game &7(&f{current}&7/&f{max} &7players)"
 
 play:
+  play-again-item-name: "&aPlay Again"
+  spectate-item-name: "&bSpectate"
+  spectate-form-title: "&bSpectate"
+  spectate-form-content: "&7Choose a player to spectate."
+  spectate-no-players: "&eThere are no alive players to spectate."
+  spectate-no-game: "&eYou are not currently spectating a TNTRun game."
+  spectate-player-unavailable: "&eThat player is no longer available to spectate."
   elimination-messages:
     - "&c{player} was eliminated."
     - "&c{player} fell into the void."

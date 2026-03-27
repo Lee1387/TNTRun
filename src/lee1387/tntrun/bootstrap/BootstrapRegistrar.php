@@ -7,6 +7,8 @@ namespace lee1387\tntrun\bootstrap;
 use lee1387\tntrun\command\subcommand\JoinSubcommand;
 use lee1387\tntrun\command\subcommand\LeaveSubcommand;
 use lee1387\tntrun\command\TNTRunCommand;
+use lee1387\tntrun\game\play\spectator\listener\PlayAgainItemListener;
+use lee1387\tntrun\game\play\spectator\listener\SpectateItemListener;
 use lee1387\tntrun\game\play\task\PlayTickTask;
 use lee1387\tntrun\game\queue\task\QueueTickTask;
 use lee1387\tntrun\game\vote\listener\VoteItemListener;
@@ -51,15 +53,31 @@ final class BootstrapRegistrar {
             $config->messages->join()
         ));
         $this->registerListener(new LeaveItemListener(
-            $runtime->waitingWorldLoadout,
+            $runtime->hotbarItems,
+            $runtime->playerGuard,
             $runtime->waitingWorldLeaveService,
             $config->messages->leave()
         ));
         $this->registerListener(new VoteItemListener(
-            $runtime->waitingWorldLoadout,
+            $runtime->hotbarItems,
             $runtime->playerSessionManager,
             $runtime->gameManager,
             $config->messages->vote()
+        ));
+        $this->registerListener(new PlayAgainItemListener(
+            $runtime->hotbarItems,
+            $runtime->playerGuard,
+            $config->waitingWorld,
+            $runtime->waitingWorldEntryService,
+            $config->messages->join()
+        ));
+        $this->registerListener(new SpectateItemListener(
+            $runtime->hotbarItems,
+            $runtime->playerGuard,
+            $runtime->playerSessionManager,
+            $runtime->gameManager,
+            $runtime->onlinePlayerRegistry,
+            $config->messages->play()
         ));
         $this->registerListener(new WaitingWorldExitListener(
             $config->waitingWorld,

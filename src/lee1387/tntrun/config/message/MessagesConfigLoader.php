@@ -73,6 +73,13 @@ final class MessagesConfigLoader {
     private function loadPlayMessages(MessageFormatter $formatter, array $playData): PlayMessages {
         return new PlayMessages(
             $formatter,
+            $this->valueReader->requireString($playData, "play-again-item-name", "play.play-again-item-name"),
+            $this->valueReader->requireString($playData, "spectate-item-name", "play.spectate-item-name"),
+            $this->valueReader->requireString($playData, "spectate-form-title", "play.spectate-form-title"),
+            $this->valueReader->requireString($playData, "spectate-form-content", "play.spectate-form-content"),
+            $this->valueReader->requireString($playData, "spectate-no-players", "play.spectate-no-players"),
+            $this->valueReader->requireString($playData, "spectate-no-game", "play.spectate-no-game"),
+            $this->valueReader->requireString($playData, "spectate-player-unavailable", "play.spectate-player-unavailable"),
             $this->valueReader->requireStringList($playData, "elimination-messages", "play.elimination-messages")
         );
     }

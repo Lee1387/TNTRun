@@ -6,6 +6,7 @@ namespace lee1387\tntrun\game\play;
 
 use lee1387\tntrun\game\GameInstance;
 use lee1387\tntrun\game\GameManager;
+use lee1387\tntrun\game\play\spectator\SpectatorLoadout;
 use lee1387\tntrun\player\OnlinePlayerRegistry;
 use lee1387\tntrun\player\TNTRunPlayerGuard;
 use pocketmine\player\Player;
@@ -15,6 +16,7 @@ final class EliminationManager {
         private GameManager $gameManager,
         private OnlinePlayerRegistry $onlinePlayerRegistry,
         private TNTRunPlayerGuard $playerGuard,
+        private SpectatorLoadout $spectatorLoadout,
         private EliminationBroadcaster $eliminationBroadcaster
     ) {}
 
@@ -47,6 +49,7 @@ final class EliminationManager {
                 }
 
                 $this->playerGuard->prepareSpectator($player);
+                $this->spectatorLoadout->apply($player);
                 $this->eliminationBroadcaster->broadcast($gameInstance, $player->getName());
             }
         }

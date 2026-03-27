@@ -8,20 +8,20 @@ use lee1387\tntrun\config\message\VoteMessages;
 use lee1387\tntrun\game\GameManager;
 use lee1387\tntrun\game\vote\form\ArenaVoteForm;
 use lee1387\tntrun\player\PlayerSessionManager;
-use lee1387\tntrun\waiting\WaitingWorldLoadout;
+use lee1387\tntrun\player\TNTRunHotbarItems;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerItemUseEvent;
 
 final class VoteItemListener implements Listener {
     public function __construct(
-        private WaitingWorldLoadout $waitingWorldLoadout,
+        private TNTRunHotbarItems $hotbarItems,
         private PlayerSessionManager $playerSessionManager,
         private GameManager $gameManager,
         private VoteMessages $messages
     ) {}
 
     public function onPlayerItemUse(PlayerItemUseEvent $event): void {
-        if (!$this->waitingWorldLoadout->isVoteItem($event->getItem())) {
+        if (!$this->hotbarItems->isVoteItem($event->getItem())) {
             return;
         }
 
